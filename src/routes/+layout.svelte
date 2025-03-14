@@ -68,7 +68,14 @@
       <span class="tooltip">Messages</span>
     </li>
     <li>
-      <a href="/group">
+      <a href="/friends">
+        <i class="bx bx-user-circle"></i>
+        <span class="links_name">Friends</span>
+      </a>
+      <span class="tooltip">Friends</span>
+    </li>
+    <li>
+      <a href="/groups">
         <i class="bx bx-group"></i>
         <span class="links_name">Groups</span>
       </a>
