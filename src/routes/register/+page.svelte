@@ -4,14 +4,30 @@
   import { goto } from '$app/navigation'
   import OTP from '$lib/components/OTP.svelte'
   import { pageHomeClass } from '$lib/service/store'
+  import API from '$lib/api/Interceptor'
+  import { AUTH_API } from '$lib/api/API-Endpoint'
 
   pageHomeClass.set('disable-menu')
+
+  let phoneNumber = ''
+  let password = ''
 
   //TODO: unframe
   if (isUserLoggedIn()) {
     goto('/chat').then(() => {
       window.location.reload()
     })
+  }
+
+  const register = async () => {
+    const res = await API.post(AUTH_API.register, {
+      full_name: '',
+      email: phoneNumber,
+      password: password,
+      avatar_url: 'http://3.87.160.66:8000',
+      role: 'guest'
+    })
+    return res;
   }
 </script>
 
@@ -35,7 +51,7 @@
           <h1 class="h2">Register</h1>
           <p class="lead">Register now for secure and instant messaging!</p>
         </div>
-        <OTP showCheckbox={true}></OTP>
+        <OTP showCheckbox={true} bind:phoneNumber bind:password finishHandler={register}></OTP>
       </div>
     </div>
   </div>

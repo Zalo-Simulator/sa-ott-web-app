@@ -25,8 +25,14 @@ const apiRequest = async (
         const response = await fetch(url, options);
 
         if (!response.ok) {
-            toast.push('Unexpected error happened!', TOAST_THEME.ERROR);
             loader.hideLoader();
+
+            const responseJSON = await response.json();
+            let message = responseJSON?.detail[0]?.msg;
+            if (!message) {
+                message = 'Unexpected error happened!';
+            }
+            toast.push(message, TOAST_THEME.ERROR);
             return;
         }
 

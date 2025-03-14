@@ -13,6 +13,9 @@
   import { loader } from '$lib/components/loader/loader'
 
   export let showCheckbox = true
+  export let finishHandler: any = null
+  export let phoneNumber = ''
+  export let password = ''
 
   let step = 1
 
@@ -31,7 +34,6 @@
   auth.useDeviceLanguage() // Auto-detect user language
   let recaptchaVerifier: RecaptchaVerifier
 
-  let phoneNumber = ''
   let checkedAgreement = false
   let confirmationResult: any
   let opt1 = '',
@@ -47,7 +49,6 @@
     inputOTP5: any,
     inputOTP6: any
   $: otp = opt1 + opt2 + opt3 + opt4 + opt5 + opt6
-  let password = ''
   let passwordRepeat = ''
 
   onMount(() => {
@@ -85,21 +86,30 @@
 
   const verifyOTP = async () => {
     try {
+      phoneOTPValid = true
       loader.showLoader()
       const result = await confirmationResult.confirm(otp)
       step = 3
     } catch (error) {
+      phoneOTPValid = false
       console.error('Error verifying OTP:', error)
     } finally {
       loader.hideLoader()
     }
   }
 
-  const login = () => {
-    logInUserSession()
-    goto('/chat').then(() => {
-      window.location.reload()
-    })
+  const finish = async () => {
+    //Call API
+    if (finishHandler) {
+      const res = await finishHandler()
+
+      if (res) {
+        logInUserSession()
+        goto('/chat').then(() => {
+          window.location.reload()
+        })
+      }
+    }
   }
 
   $: phoneValid = validatePhoneNumber(phoneNumber)
@@ -137,8 +147,8 @@
         }
         break
       case 6:
-        if(validationStep2) {
-          verifyOTP();
+        if (validationStep2) {
+          verifyOTP()
         }
         break
     }
@@ -195,7 +205,10 @@
         {#if step == 2}
           <div class="form-group text-center">
             <label for="">OTP is sent. Please enter OTP:</label>
-            <div class="d-flex justify-content-center">
+            <div
+              class="d-flex justify-content-center otp-div"
+              class:is-invalid={!phoneOTPValid}
+            >
               <input
                 type="text"
                 class="otp-input form-control text-center mx-1"
@@ -205,6 +218,7 @@
                 on:keyup={() => {
                   handleKeyUp(1)
                 }}
+                class:is-invalid={!phoneOTPValid}
               />
               <input
                 type="text"
@@ -215,6 +229,7 @@
                 on:keyup={() => {
                   handleKeyUp(2)
                 }}
+                class:is-invalid={!phoneOTPValid}
               />
               <input
                 type="text"
@@ -225,6 +240,7 @@
                 on:keyup={() => {
                   handleKeyUp(3)
                 }}
+                class:is-invalid={!phoneOTPValid}
               />
               <input
                 type="text"
@@ -235,6 +251,7 @@
                 on:keyup={() => {
                   handleKeyUp(4)
                 }}
+                class:is-invalid={!phoneOTPValid}
               />
               <input
                 type="text"
@@ -245,6 +262,7 @@
                 on:keyup={() => {
                   handleKeyUp(5)
                 }}
+                class:is-invalid={!phoneOTPValid}
               />
               <input
                 type="text"
@@ -255,8 +273,10 @@
                 on:keyup={() => {
                   handleKeyUp(6)
                 }}
+                class:is-invalid={!phoneOTPValid}
               />
             </div>
+            <div class="invalid-feedback">{MESSAGE.ERROR_OTP_NOT_VALID}</div>
           </div>
           <div class="text-center mt-3">
             <button
@@ -304,7 +324,7 @@
               type="button"
               class="btn btn-lg btn-primary"
               disabled={!validationStep3}
-              on:click={login}>Finish</button
+              on:click={finish}>Finish</button
             >
           </div>
         {/if}
@@ -342,5 +362,9 @@
   .checkbox-lg {
     transform: scale(1.5); /* Phóng to checkbox */
     margin-left: -15px;
+  }
+
+  .otp-div.is-invalid ~ .invalid-feedback {
+    display: block;
   }
 </style>

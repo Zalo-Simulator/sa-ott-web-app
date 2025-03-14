@@ -3,9 +3,11 @@
   import { isUserLoggedIn } from '$lib/service/login'
   import { goto } from '$app/navigation'
   import Particles from '$lib/components/Particles.svelte'
-  import { pageHomeClass } from '$lib/service/store';
+  import { pageHomeClass } from '$lib/service/store'
+  import API from '$lib/api/Interceptor'
+  import { AUTH_API } from '$lib/api/API-Endpoint'
 
-  pageHomeClass.set("disable-menu");
+  pageHomeClass.set('disable-menu')
 
   if (isUserLoggedIn()) {
     goto('/chat').then(() => {
@@ -13,11 +15,17 @@
     })
   }
 
-  const login = () => {
-    logInUserSession()
-    goto('/chat').then(() => {
-      window.location.reload()
+  const login = async () => {
+    const res = await API.post(AUTH_API.login, {
+      username: phoneNumber,
+      password: password
     })
+    //if (res) {
+      logInUserSession()
+      goto('/chat').then(() => {
+        window.location.reload()
+      })
+    //}
   }
 
   let phoneNumber = ''

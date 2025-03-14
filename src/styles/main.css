@@ -253,3 +253,7 @@
     cursor:not-allowed !important;
     pointer-events: none !important;
   }
+
+  .bx-log-out {
+    cursor: pointer;
+  }

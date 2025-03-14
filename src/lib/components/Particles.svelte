@@ -28,6 +28,7 @@
 
   function updateParticles() {
     if (!ctx) return
+    if(!canvas) return
 
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 

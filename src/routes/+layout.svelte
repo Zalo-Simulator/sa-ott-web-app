@@ -4,8 +4,12 @@
   import { goto } from '$app/navigation'
   import { onMount } from 'svelte'
   import { page } from '$app/stores'
-  import { pageHomeClass } from '$lib/service/store';  
-  import Loader from "$lib/components/loader/Loader.svelte";
+  import { pageHomeClass } from '$lib/service/store'
+  import Loader from '$lib/components/loader/Loader.svelte'
+  import { SvelteToast } from '@zerodevx/svelte-toast'
+  import ConfirmationDialog from '$lib/components/ConfirmationDialog.svelte'
+
+  let showDialog = false
 
   if (
     !isUserLoggedIn() &&
@@ -16,9 +20,15 @@
     goto('/login')
   }
 
+  const showConfirmationlogOut = () => {
+    showDialog = true
+  }
+
   const logOut = () => {
     logOutUserSession()
-    goto('/login')
+    goto('/login').then(() => {
+      window.location.reload()
+    })
   }
 
   onMount(() => {
@@ -41,7 +51,8 @@
   })
 </script>
 
-<Loader/>
+<Loader />
+<SvelteToast />
 <div class="sidebar">
   <div class="logo-details">
     <i class="bx bxl-c-plus-plus icon"></i>
@@ -95,14 +106,19 @@
           <div class="job">Web designer</div>
         </div>
       </div>
-      <i class="bx bx-log-out" on:click={logOut} id="log_out"></i>
+      <i class="bx bx-log-out" on:click={showConfirmationlogOut} id="log_out"
+      ></i>
     </li>
   </ul>
 </div>
 <section class="home-section {$pageHomeClass}">
   <slot />
 </section>
+<ConfirmationDialog
+  bind:show={showDialog}
+  message="Would you like to log out?"
+  onConfirm={logOut}
+/>
 
 <style>
-  
 </style>
