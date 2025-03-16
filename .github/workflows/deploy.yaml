@@ -1,0 +1,62 @@
+name: Deploy Web-Service to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+  HOST: ${{ secrets.EC2_PUBLIC_IP }}
+  USER: "ubuntu"
+  REPO_URL: "git@github.com:${{ github.repository }}.git"
+  PROJECT_DIR: "/home/ubuntu/web-app"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: SSH into EC2 and deploy
+        run: |
+          echo "$PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST << 'EOF'
+            echo "Updating system packages..."
+            sudo apt update -y
+
+            echo "Installing dependencies..."
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt install -y nodejs git
+
+            echo "Installing PM2..."
+            sudo npm install -g pm2
+
+            echo "Cloning or updating the repository..."
+            if [ ! -d "$PROJECT_DIR" ]; then
+              git clone $REPO_URL $PROJECT_DIR
+            else
+              echo "Repository exists. Pulling latest changes..."
+              cd $PROJECT_DIR
+              git pull origin main
+            fi
+
+            cd $PROJECT_DIR
+
+            echo "Installing project dependencies..."
+            npm install
+
+            echo "Building the SvelteKit application..."
+            npm run build
+
+            echo "Starting the application with PM2..."
+            pm2 delete svelte-app || true
+            pm2 start npm --name "svelte-app" -- start
+
+            echo "Deployment complete!"
+          EOF
+
+          rm -f private_key.pem
