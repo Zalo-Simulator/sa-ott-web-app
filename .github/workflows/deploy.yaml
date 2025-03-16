@@ -54,7 +54,7 @@ jobs:
 
             echo "Starting the application with PM2..."
             pm2 delete svelte-app || true
-            pm2 start npm --name "svelte-app" -- start
+            pm2 start npm --name "svelte-app" -- start -- --port 5173
 
             echo "Deployment complete!"
           EOF
