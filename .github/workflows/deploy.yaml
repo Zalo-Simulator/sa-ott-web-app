@@ -28,7 +28,7 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
-          scp -o StrictHostKeyChecking=no -i private_key.pem .env $USER@$HOST:/home/ubuntu/app/.env
+          scp -o StrictHostKeyChecking=no -i private_key.pem .env $USER@$HOST:/home/ubuntu/web-app/.env
           rm -f private_key.pem .env
         
       - name: SSH into EC2 and deploy
@@ -37,8 +37,8 @@ jobs:
           chmod 600 private_key.pem
   
           ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST << EOF
-            export $(cat /home/ubuntu/app/.env | xargs)
-            cd /home/ubuntu/app
+            export $(cat /home/ubuntu/web-app/.env | xargs)
+            cd /home/ubuntu/web-app
 
             echo "Updating system packages..."
             sudo apt update -y
