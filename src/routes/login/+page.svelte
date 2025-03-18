@@ -60,7 +60,7 @@
         <div class="card p-4">
           <div class="card-body">
             <h1>VChat Login</h1>
-            <p class="text-muted">Sign In to your account</p>
+            <p class="text-muted">Sign in to your account</p>
             <div class="input-group mb-3">
               <span class="input-group-addon"><i class="fa fa-user"></i></span>
               <input
