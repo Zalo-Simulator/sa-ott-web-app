@@ -1,318 +1,93 @@
 <script lang="ts">
+  import { getRandomColor } from '$lib/utils/common'
+  import { goto } from '$app/navigation'
   export let buttonText = ''
+  export let users: any = []
+  export let handlerItem: any = null
+  export let buttonStyle = 'btn-primary'
+  export let excludeActionItems: any = []
+  export let ableViewProfie = false
+
+  $: users && calcluateBackground()
+
+  const calcluateBackground = () => {
+    for (let user of users) {
+      if (!user.avatar_url) {
+        user.background = getRandomColor()
+      }
+    }
+  }
+
+  const handlerUserAction = (user: any) => {
+    if (handlerItem) {
+      handlerItem(user)
+    }
+  }
+
+  const viewProfile = (user: any) => {
+    if (ableViewProfie) {
+      goto(`/profile/${user.id}`)
+    }
+  }
 </script>
 
 <div class="card-box ribbon-box">
   <div class="clearfix"></div>
   <div class="inbox-widget">
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar2.png"
-            class="rounded-circle"
-            alt=""
-          />
+    {#each users as user}
+      <div>
+        <div class="inbox-item">
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            class="inbox-item-img"
+            class:cursor-pointer={ableViewProfie}
+            on:click={() => {
+              viewProfile(user)
+            }}
+          >
+            {#if user.avatar_url}
+              <img src={user.avatar_url} class="rounded-circle" alt="" />
+            {:else}
+              <div
+                class="letter-rounded-circle"
+                style="background-color: {user.background}"
+              >
+                {user.full_name[0]}
+              </div>
+            {/if}
+          </div>
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+          <p
+            class="inbox-item-author"
+            class:cursor-pointer={ableViewProfie}
+            on:click={() => {
+              viewProfile(user)
+            }}
+          >
+            {user.full_name}
+          </p>
+          <p class="inbox-item-text">
+            {user.is_active ? 'Online' : 'Offline'}
+          </p>
+          <p class="inbox-item-date">
+            {#if buttonText && !excludeActionItems.some((item: number) => item == user.id)}
+              <button
+                type="button"
+                class="btn btn-icon btn-sm waves-effect waves-light {buttonStyle}"
+                on:click={() => {
+                  handlerUserAction(user)
+                }}>{buttonText}</button
+              >
+            {/if}
+          </p>
         </div>
-        <p class="inbox-item-author">Tomaslau</p>
-        <p class="inbox-item-text">I've finished it! See you so...</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
       </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar3.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Stillnotdavid</p>
-        <p class="inbox-item-text">This theme is awesome!</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar4.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Kurafire</p>
-        <p class="inbox-item-text">Nice to meet you</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar5.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Shahedk</p>
-        <p class="inbox-item-text">Hey! there I'm available...</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar6.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Adhamdannaway</p>
-        <p class="inbox-item-text">This theme is awesome!</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar2.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Tomaslau</p>
-        <p class="inbox-item-text">I've finished it! See you so...</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar3.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Stillnotdavid</p>
-        <p class="inbox-item-text">This theme is awesome!</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar2.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Tomaslau</p>
-        <p class="inbox-item-text">I've finished it! See you so...</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar3.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Stillnotdavid</p>
-        <p class="inbox-item-text">This theme is awesome!</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar4.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Kurafire</p>
-        <p class="inbox-item-text">Nice to meet you</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar5.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Shahedk</p>
-        <p class="inbox-item-text">Hey! there I'm available...</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar6.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Adhamdannaway</p>
-        <p class="inbox-item-text">This theme is awesome!</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar2.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Tomaslau</p>
-        <p class="inbox-item-text">I've finished it! See you so...</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
-    <a href="#">
-      <div class="inbox-item">
-        <div class="inbox-item-img">
-          <img
-            src="https://bootdey.com/img/Content/avatar/avatar3.png"
-            class="rounded-circle"
-            alt=""
-          />
-        </div>
-        <p class="inbox-item-author">Stillnotdavid</p>
-        <p class="inbox-item-text">This theme is awesome!</p>
-        <p class="inbox-item-date">
-          {#if buttonText}
-            <button
-              type="button"
-              class="btn btn-icon btn-sm waves-effect waves-light btn-primary"
-              >{buttonText}</button
-            >
-          {/if}
-        </p>
-      </div>
-    </a>
+    {/each}
+    {#if users.length <= 0}
+      (No data)
+    {/if}
   </div>
 </div>
 
@@ -364,5 +139,24 @@
     position: absolute;
     right: 7px;
     top: 12px;
+  }
+
+  .letter-rounded-circle {
+    width: 40px;
+    height: 40px;
+    /* background-color: #4caf50; Green background */
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    text-transform: uppercase; /* Make sure it's uppercase */
+    font-family: Arial, sans-serif;
+  }
+
+  .cursor-pointer{
+    cursor: pointer;
   }
 </style>

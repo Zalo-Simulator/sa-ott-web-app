@@ -1,16 +1,58 @@
 <script lang="ts">
   import Tab from '$lib/components/Tab.svelte'
-  import ListUsers from '$lib/components/ListUsers.svelte';
+  import ListUsers from '$lib/components/ListUsers.svelte'
+  import { getlistGroups, searchFriends } from '$lib/service/user'
+  import { getRandomColor } from '$lib/utils/common'
+  import { onMount } from 'svelte'
+  import { MESSAGE } from '$lib/constants/message'
+  import { getcurrentSessionUser } from '$lib/service/login'  
+
   let tabIndex = 0
+  let groups: any = []
+  let users: any = []
+  let searchText: string = ''
+  let groupName = ''
+  const MIN_NUM_MEMBERS = 3
+  let currentUser = getcurrentSessionUser();
+  let members: any = [currentUser]
 
-  const getRandomColor = () => {
-    return `#${Math.floor(Math.random() * 16777215).toString(16)}`
+  onMount(() => {
+    groups = getlistGroups()
+    getListFriends()
+  })
+
+  const getListFriends = () => {
+    let friends = searchFriends(searchText)
+    const idsInMember = new Set(members.map((item: any) => item.id))
+    users = friends.filter((item: any) => !idsInMember.has(item.id))
   }
 
-  let colors = []
-  for (let i = 0; i < 23; i++) {
-    colors.push(getRandomColor())
+  const addUser = (user: any) => {
+    members.push(user)
+    members = members
+    getListFriends()
   }
+
+  const removeUser = (user: any) => {
+    members = members.filter((item: any) => item.id !== user.id)
+    getListFriends()
+  }
+
+  $: groups && calcluateBackground()
+
+  const calcluateBackground = () => {
+    for (let group of groups) {
+      for (let index = 0; index < group.members.length; index++) {
+        if (index >= 4) break
+        let member = group.members[index]
+        if (!member.avatar_url) {
+          member.background = getRandomColor()
+        }
+      }
+    }
+  }
+
+  $: validationGroup = !!groupName && members.length >= MIN_NUM_MEMBERS
 </script>
 
 <svelte:head>
@@ -25,630 +67,115 @@
 </svelte:head>
 
 <div class="content__inner">
-  <Tab bind:tabIndex tabs={['Total Groups: 12', 'Make a New Group']}></Tab>
+  <Tab
+    bind:tabIndex
+    tabs={['Total Groups: ' + groups.length, 'Make a New Group']}
+  ></Tab>
   {#if tabIndex == 0}
     <div class="row groups">
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar1.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar2.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar3.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar4.png"
-                alt=""
-              />
-            </div>
-
-            <div class="groups__info">
-              <strong>Sold Properties</strong>
-              <small>106 Contacts</small>
-            </div>
-          </a>
-
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
+      {#each groups as group}
+        <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
+          <div class="groups__item">
+            <a href="">
+              <div class="groups__img">
+                {#each group.members as member, index}
+                  {#if index < 4}
+                    {#if member.avatar_url}
+                      <img class="avatar-img" src={member.avatar_url} alt="" />
+                    {:else}
+                      <div
+                        class="avatar-img avatar-char"
+                        style="background: {member.background}"
+                      >
+                        {member.full_name[0].toUpperCase()}
+                      </div>
+                    {/if}
+                  {/if}
+                {/each}
               </div>
-            </div>
+
+              <div class="groups__info">
+                <strong>{group.name}</strong>
+                <small>{group.members.length} Members</small>
+              </div>
+            </a>
           </div>
         </div>
-      </div>
-
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[0]}"
-              >
-                A
-              </div>
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar1.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar2.png"
-                alt=""
-              />
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[1]}"
-              >
-                D
-              </div>
-            </div>
-
-            <div class="groups__info">
-              <strong>San Fransisco</strong>
-              <small>12 Contacts</small>
-            </div>
-          </a>
-
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar6.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar7.png"
-                alt=""
-              />
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[3]}"
-              >
-                E
-              </div>
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar1.png"
-                alt=""
-              />
-            </div>
-
-            <div class="groups__info">
-              <strong>Pending Leads</strong>
-              <small>42 Contacts</small>
-            </div>
-          </a>
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar6.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar7.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar4.png"
-                alt=""
-              />
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[4]}"
-              >
-                T
-              </div>
-            </div>
-
-            <div class="groups__info">
-              <strong>Management</strong>
-              <small>3 Contacts</small>
-            </div>
-          </a>
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar1.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar6.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar4.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar3.png"
-                alt=""
-              />
-            </div>
-
-            <div class="groups__info">
-              <strong>Colleagues</strong>
-              <small>22 Contacts</small>
-            </div>
-          </a>
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[5]}"
-              >
-                E
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[6]}"
-              >
-                T
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[7]}"
-              >
-                O
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[8]}"
-              >
-                G
-              </div>
-            </div>
-
-            <div class="groups__info">
-              <strong>Los Angeles</strong>
-              <small>27 Contacts</small>
-            </div>
-          </a>
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar1.png"
-                alt=""
-              />
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[9]}"
-              >
-                A
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[10]}"
-              >
-                S
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[11]}"
-              >
-                X
-              </div>
-            </div>
-
-            <div class="groups__info">
-              <strong>Out Sourcing</strong>
-              <small>1 Contacts</small>
-            </div>
-          </a>
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[12]}"
-              >
-                Z
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[13]}"
-              >
-                R
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[14]}"
-              >
-                N
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[15]}"
-              >
-                B
-              </div>
-            </div>
-
-            <div class="groups__info">
-              <strong>San Diego</strong>
-              <small>243 Contacts</small>
-            </div>
-          </a>
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar1.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar6.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar5.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar3.png"
-                alt=""
-              />
-            </div>
-
-            <div class="groups__info">
-              <strong>Communication</strong>
-              <small>96 Contacts</small>
-            </div>
-          </a>
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[16]}"
-              >
-                D
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[17]}"
-              >
-                L
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[18]}"
-              >
-                S
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[19]}"
-              >
-                A
-              </div>
-            </div>
-
-            <div class="groups__info">
-              <strong>Not varified</strong>
-              <small>0 Contacts</small>
-            </div>
-          </a>
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar1.png"
-                alt=""
-              />
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar6.png"
-                alt=""
-              />
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[20]}"
-              >
-                G
-              </div>
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar7.png"
-                alt=""
-              />
-            </div>
-
-            <div class="groups__info">
-              <strong>Email List</strong>
-              <small>10 Contacts</small>
-            </div>
-          </a>
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
-        <div class="groups__item">
-          <a href="">
-            <div class="groups__img">
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar1.png"
-                alt=""
-              />
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[21]}"
-              >
-                G
-              </div>
-              <div
-                class="avatar-img avatar-char"
-                style="background: {colors[22]}"
-              >
-                L
-              </div>
-              <img
-                class="avatar-img"
-                src="https://bootdey.com/img/Content/avatar/avatar3.png"
-                alt=""
-              />
-            </div>
-
-            <div class="groups__info">
-              <strong>Connected</strong>
-              <small>178 Contacts</small>
-            </div>
-          </a>
-          <div class="actions">
-            <div class="dropdown actions__item">
-              <i class="zmdi zmdi-more-vert" data-toggle="dropdown"></i>
-
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="">Edit</a>
-                <a
-                  class="dropdown-item"
-                  href=""
-                  data-demo-action="delete-listing">Delete</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/each}
     </div>
   {/if}
   {#if tabIndex == 1}
     <div class="row">
-      <div class="col-sm-12 col-md-12 col-lg-6 padding-box">
-        <div class="input-group mb-3">
-          <span class="input-group-text" id="inputGroup-sizing-default"
-            >Search</span
-          >
-          <input
-            type="text"
-            class="form-control"
-            aria-label="Sizing example input"
-            aria-describedby="inputGroup-sizing-default"
-          />
+      <div class="col-sm-12 col-md-12 col-lg-6">
+        <div class="row padding-box">
+          <div class="input-group mb-3">
+            <span class="input-group-text" id="inputGroup-sizing-default"
+              >Search</span
+            >
+            <input
+              type="text"
+              class="form-control"
+              aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-default"
+              bind:value={searchText}
+              on:change={getListFriends}
+            />
+          </div>
+        </div>
+        <div class="row" style="margin-left: 10px;">Suggestions:</div>
+        <div class="row">
+          <div class="col-sm-12">
+            <ListUsers buttonText="Add" {users} handlerItem={addUser}
+            ></ListUsers>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="row" style="margin-left: 10px;">Suggestions:</div>
-    <div class="row">
-      <div class="col-sm-12 col-md-6 col-lg-6">
-        <ListUsers buttonText="Add"></ListUsers>
+
+      <div class="col-sm-12 col-md-12 col-lg-6">
+        <div class="row padding-box">
+          <div class="input-group mb-3">
+            <input
+              type="text"
+              class="form-control"
+              aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-default"
+              placeholder="Enter group name"
+              bind:value={groupName}
+              class:is-invalid={!groupName}
+            />
+            <div class="invalid-feedback">
+              {MESSAGE.ERROR_GROUP_NAME_NOT_VALID}
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-left: 10px;">
+          <div class:is-invalid={members.length < MIN_NUM_MEMBERS}>
+            Selected Members:
+          </div>
+          <div class="invalid-feedback">
+            {MESSAGE.ERROR_MEMBERS_NOT_VALID}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <ListUsers
+              buttonText="Remove"
+              users={members}
+              handlerItem={removeUser}
+              buttonStyle="btn-warning"
+              excludeActionItems={[currentUser.id]}
+            ></ListUsers>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="d-flex justify-content-end col-sm-12">
+              <button class="btn btn-primary" disabled={!validationGroup}
+                >Create Group</button
+              >
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   {/if}
@@ -687,18 +214,6 @@
     text-align: center;
     padding: 2rem 1rem 1.5rem;
     margin-bottom: 30px;
-  }
-
-  .groups__item:hover .actions {
-    opacity: 1;
-  }
-
-  .groups__item .actions {
-    position: absolute;
-    top: 0.7rem;
-    right: 0.5rem;
-    z-index: 1;
-    opacity: 0;
   }
 
   .groups__img {

@@ -258,3 +258,7 @@
   .bx-log-out {
     cursor: pointer;
   }
+
+  .is-invalid ~ .invalid-feedback {
+    display: block;
+  }

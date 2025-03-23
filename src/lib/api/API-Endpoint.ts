@@ -1,4 +1,4 @@
-const URL_PREFIX = "http://3.87.160.66:8000";
+const URL_PREFIX = "http://52.23.164.179:8000";
 
 export const AUTH_API = {
     login: `${URL_PREFIX}/auth/login`,

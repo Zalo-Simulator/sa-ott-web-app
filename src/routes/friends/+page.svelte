@@ -1,8 +1,22 @@
 <script lang="ts">
   import Tab from '$lib/components/Tab.svelte'
   import ListUsers from '$lib/components/ListUsers.svelte'
+  import { getlistFriends, searchUsers } from '$lib/service/user'
+  import { onMount } from 'svelte'
 
   let tabIndex = 0
+  let friends: any = []
+  let users: any = []
+  let searchText: string = ''
+
+  onMount(() => {
+    friends = getlistFriends()
+    users = searchUsers(searchText)
+  })
+
+  const searchFriend = () => {
+    users = searchUsers(searchText)
+  }
 </script>
 
 <svelte:head>
@@ -17,12 +31,15 @@
 </svelte:head>
 
 <div class="content">
-  <Tab bind:tabIndex tabs={['Total Friends: 100', 'Make a New Friend']}></Tab>
+  <Tab
+    bind:tabIndex
+    tabs={['Total Friends: ' + users.length, 'Make a New Friend']}
+  ></Tab>
   <div class="main-container">
     {#if tabIndex == 0}
       <div class="row">
         <div class="col-sm-12 col-md-6 col-lg-6">
-          <ListUsers buttonText="Message"></ListUsers>
+          <ListUsers buttonText="Message" users={friends} ableViewProfie={true}></ListUsers>
         </div>
         <!-- end col -->
       </div>
@@ -39,6 +56,8 @@
               class="form-control"
               aria-label="Sizing example input"
               aria-describedby="inputGroup-sizing-default"
+              bind:value={searchText}
+              on:change={searchFriend}
             />
           </div>
         </div>
@@ -47,7 +66,7 @@
       <div class="row">
         <div class="col-sm-12 col-md-6 col-lg-6">
           <!-- Personal-Information -->
-          <ListUsers buttonText="Make friend"></ListUsers>
+          <ListUsers buttonText="Make friend" {users} ableViewProfie={true}></ListUsers>
         </div>
         <!-- end col -->
       </div>

@@ -89,7 +89,7 @@
       <span class="tooltip">Files</span>
     </li>
     <li>
-      <a href="/profile">
+      <a href="/analytics">
         <i class="bx bx-pie-chart-alt-2"></i>
         <span class="links_name">Analytics</span>
       </a>
