@@ -1,3 +1,23 @@
+<script lang="ts">
+  import { getcurrentSessionUser } from '$lib/service/login'
+  import { getUserById } from '$lib/service/user'
+  import { page } from '$app/stores'
+  let currentUser = getcurrentSessionUser()
+  let selectedUser = {}
+
+  let userId = $page.params.id
+  if (userId) {
+    let user = getUserById(parseInt(userId))
+    if (user) {
+      selectedUser = user
+    } else {
+      selectedUser = currentUser
+    }
+  } else {
+    selectedUser = currentUser
+  }
+</script>
+
 <svelte:head>
   <title>Profile Dashboard</title>
   <link
@@ -9,186 +29,111 @@
   ></script>
 </svelte:head>
 
-<div class="content">
-  <div class="main-container">
-    <div class="row">
-      <div class="col-sm-12">
-        <!-- meta -->
-        <div class="profile-user-box card-box bg-custom">
-          <div class="row">
-            <div class="col-sm-6">
-              <span class="float-left mr-3"
-                ><img
-                  src="https://bootdey.com/img/Content/avatar/avatar1.png"
-                  alt=""
-                  class="thumb-lg rounded-circle"
-                /></span
-              >
-              <div class="media-body text-white">
-                <h4 class="mt-1 mb-1 font-18">Michael A. Franklin</h4>
-                <p class="font-13 text-light">User Experience Specialist</p>
-                <p class="text-light mb-0">California, United States</p>
-              </div>
+<div id="profile-container" class="container-xl px-4 mt-4">
+  <div class="row">
+    <div class="col-xl-4">
+      <!-- Profile picture card-->
+      <div class="card mb-4 mb-xl-0">
+        <div class="card-header">Profile Picture</div>
+        <div class="card-body text-center">
+          <!-- Profile picture image-->
+          <img
+            class="img-account-profile rounded-circle mb-2"
+            src="http://bootdey.com/img/Content/avatar/avatar1.png"
+            alt=""
+          />
+          {#if currentUser.id == selectedUser.id}
+            <!-- Profile picture help block-->
+            <div class="small font-italic text-muted mb-4">
+              JPG or PNG no larger than 5 MB
             </div>
-            <div class="col-sm-6">
-              <div class="text-right">
-                <button type="button" class="btn btn-light waves-effect"
-                  ><i class="mdi mdi-account-settings-variant mr-1"></i> Edit Profile</button
-                >
-              </div>
-            </div>
-          </div>
+            <!-- Profile picture upload button-->
+            <button class="btn btn-primary" type="button"
+              >Upload new image</button
+            >
+          {/if}
         </div>
-        <!--/ meta -->
       </div>
     </div>
-    <!-- end row -->
+    <div class="col-xl-8">
+      <!-- Account details card-->
+      <div class="card mb-4">
+        <div class="card-header">Account Details</div>
+        <div class="card-body">
+          <form>
+            <!-- Form Group (username)-->
+            <div class="mb-3">
+              <label class="mb-1" for="inputUsername">Display Name</label>
+              <input
+                class="form-control"
+                type="text"
+                placeholder="Your full name"
+                bind:value={selectedUser.full_name}
+                disabled={currentUser.id != selectedUser.id}
+              />
+            </div>
+            <!-- Form Group (email address)-->
+            <div class="mb-3">
+              <label class="mb-1" for="inputEmailAddress">Phone Number</label>
+              <input
+                class="form-control"
+                type="text"
+                placeholder="Phone number"
+                bind:value={selectedUser.user_name}
+                disabled={currentUser.id != selectedUser.id}
+              />
+            </div>
+            <!-- Save changes button-->
+            {#if currentUser.id == selectedUser.id}
+              <button class="btn btn-primary" type="button">Save changes</button
+              >
+            {/if}
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
-  <!-- container -->
 </div>
 
 <style>
-
-  .thumb-lg {
-    height: 88px;
-    width: 88px;
+  .img-account-profile {
+    height: 10rem;
   }
-  .profile-user-box {
-    position: relative;
-    border-radius: 5px;
+  .rounded-circle {
+    border-radius: 50% !important;
   }
-  .bg-custom {
-    background-color: #02c0ce !important;
+  .card {
+    box-shadow: 0 0.15rem 0.15rem 0 rgb(33 40 50 / 15%);
   }
-  .profile-user-box {
-    position: relative;
-    border-radius: 5px;
-  }
-
-  .card-box {
-    padding: 20px;
-    border-radius: 3px;
-    margin-bottom: 30px;
-    background-color: #fff;
-  }
-  .inbox-widget .inbox-item img {
-    width: 40px;
-  }
-
-  .inbox-widget .inbox-item {
-    border-bottom: 1px solid #f3f6f8;
-    overflow: hidden;
-    padding: 10px 0;
-    position: relative;
-  }
-
-  .inbox-widget .inbox-item .inbox-item-img {
-    display: block;
-    float: left;
-    margin-right: 15px;
-    width: 40px;
-  }
-
-  .inbox-widget .inbox-item img {
-    width: 40px;
-  }
-
-  .inbox-widget .inbox-item .inbox-item-author {
-    color: #313a46;
-    display: block;
-    margin: 0;
-  }
-
-  .inbox-widget .inbox-item .inbox-item-text {
-    color: #98a6ad;
-    display: block;
-    font-size: 14px;
-    margin: 0;
-  }
-
-  .inbox-widget .inbox-item .inbox-item-date {
-    color: #98a6ad;
-    font-size: 11px;
-    position: absolute;
-    right: 7px;
-    top: 12px;
-  }
-
-  :global(.comment-list .comment-box-item) {
-    position: relative;
-  }
-
-  :global(.comment-list .comment-box-item .commnet-item-date) {
-    color: #98a6ad;
-    font-size: 11px;
-    position: absolute;
-    right: 7px;
-    top: 2px;
-  }
-
-  :global(.comment-list .comment-box-item .commnet-item-msg) {
-    color: #313a46;
-    display: block;
-    margin: 10px 0;
-    font-weight: 400;
-    font-size: 15px;
-    line-height: 24px;
-  }
-
-  :global(.comment-list .comment-box-item .commnet-item-user) {
-    color: #98a6ad;
-    display: block;
-    font-size: 14px;
-    margin: 0;
-  }
-
-  :global(.comment-list a + a) {
-    margin-top: 15px;
-    display: block;
-  }
-
-  .ribbon-box .ribbon-primary {
-    background: #2d7bf4;
-  }
-
-  .ribbon-box .ribbon {
-    position: relative;
-    float: left;
-    clear: both;
-    padding: 5px 12px 5px 12px;
-    margin-left: -30px;
-    margin-bottom: 15px;
-    font-family: Rubik, sans-serif;
-    -webkit-box-shadow: 2px 5px 10px rgba(49, 58, 70, 0.15);
-    -o-box-shadow: 2px 5px 10px rgba(49, 58, 70, 0.15);
-    box-shadow: 2px 5px 10px rgba(49, 58, 70, 0.15);
-    color: #fff;
-    font-size: 13px;
-  }
-  .text-custom {
-    color: #02c0ce !important;
-  }
-
-  .badge-custom {
-    background: #02c0ce;
-    color: #fff;
-  }
-  .badge {
-    font-family: Rubik, sans-serif;
-    -webkit-box-shadow:
-      0 0 24px 0 rgba(0, 0, 0, 0.06),
-      0 1px 0 0 rgba(0, 0, 0, 0.02);
-    box-shadow:
-      0 0 24px 0 rgba(0, 0, 0, 0.06),
-      0 1px 0 0 rgba(0, 0, 0, 0.02);
-    padding: 0.35em 0.5em;
+  .card .card-header {
     font-weight: 500;
   }
-  .text-muted {
-    color: #98a6ad !important;
+  .card-header:first-child {
+    border-radius: 0.35rem 0.35rem 0 0;
   }
-
-  .font-13 {
-    font-size: 13px !important;
+  .card-header {
+    padding: 1rem 1.35rem;
+    margin-bottom: 0;
+    background-color: rgba(33, 40, 50, 0.03);
+    border-bottom: 1px solid rgba(33, 40, 50, 0.125);
+  }
+  .form-control {
+    display: block;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #69707a;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #c5ccd6;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0.35rem;
+    transition:
+      border-color 0.15s ease-in-out,
+      box-shadow 0.15s ease-in-out;
   }
 </style>

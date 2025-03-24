@@ -1,22 +1,13 @@
 <script lang="ts">
-  import { getRandomColor } from '$lib/utils/common'
   import { goto } from '$app/navigation'
+  import Avatar from '$lib/components/Avatar.svelte'
+
   export let buttonText = ''
   export let users: any = []
   export let handlerItem: any = null
   export let buttonStyle = 'btn-primary'
   export let excludeActionItems: any = []
   export let ableViewProfie = false
-
-  $: users && calcluateBackground()
-
-  const calcluateBackground = () => {
-    for (let user of users) {
-      if (!user.avatar_url) {
-        user.background = getRandomColor()
-      }
-    }
-  }
 
   const handlerUserAction = (user: any) => {
     if (handlerItem) {
@@ -46,16 +37,7 @@
               viewProfile(user)
             }}
           >
-            {#if user.avatar_url}
-              <img src={user.avatar_url} class="rounded-circle" alt="" />
-            {:else}
-              <div
-                class="letter-rounded-circle"
-                style="background-color: {user.background}"
-              >
-                {user.full_name[0]}
-              </div>
-            {/if}
+            <Avatar {user}></Avatar>
           </div>
           <!-- svelte-ignore a11y_click_events_have_key_events -->
           <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -98,9 +80,6 @@
     margin-bottom: 30px;
     background-color: #fff;
   }
-  .inbox-widget .inbox-item img {
-    width: 40px;
-  }
 
   .inbox-widget .inbox-item {
     border-bottom: 1px solid #f3f6f8;
@@ -113,10 +92,6 @@
     display: block;
     float: left;
     margin-right: 15px;
-    width: 40px;
-  }
-
-  .inbox-widget .inbox-item img {
     width: 40px;
   }
 
@@ -141,22 +116,11 @@
     top: 12px;
   }
 
-  .letter-rounded-circle {
-    width: 40px;
-    height: 40px;
-    /* background-color: #4caf50; Green background */
-    color: white;
-    font-size: 20px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    text-transform: uppercase; /* Make sure it's uppercase */
-    font-family: Arial, sans-serif;
-  }
-
-  .cursor-pointer{
+  .cursor-pointer {
     cursor: pointer;
+  }
+  
+  .cursor-pointer:hover {
+    text-decoration: underline;
   }
 </style>

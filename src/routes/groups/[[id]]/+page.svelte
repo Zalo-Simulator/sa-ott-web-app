@@ -2,41 +2,61 @@
   import Tab from '$lib/components/Tab.svelte'
   import ListUsers from '$lib/components/ListUsers.svelte'
   import { getlistGroups, searchFriends } from '$lib/service/user'
-  import { getRandomColor } from '$lib/utils/common'
+  import { getColorByText } from '$lib/utils/common'
   import { onMount } from 'svelte'
   import { MESSAGE } from '$lib/constants/message'
-  import { getcurrentSessionUser } from '$lib/service/login'  
+  import { getcurrentSessionUser } from '$lib/service/login'
+  import { page } from '$app/stores'
+  import { goto } from '$app/navigation'
 
   let tabIndex = 0
   let groups: any = []
   let users: any = []
   let searchText: string = ''
-  let groupName = ''
   const MIN_NUM_MEMBERS = 3
-  let currentUser = getcurrentSessionUser();
-  let members: any = [currentUser]
+  let currentUser = getcurrentSessionUser()
+  let groupId = $page.params.id
+  let selectedGroup = {
+    id: 0,
+    name: '',
+    members: [currentUser]
+  }
 
   onMount(() => {
     groups = getlistGroups()
     getListFriends()
+    if (groupId) {
+      selectedGroup = groups.find((item: any) => item.id == groupId)
+      if (selectedGroup) {
+        tabIndex = 1
+      }
+    }
   })
 
   const getListFriends = () => {
     let friends = searchFriends(searchText)
-    const idsInMember = new Set(members.map((item: any) => item.id))
+    const idsInMember = new Set(selectedGroup.members.map((item: any) => item.id))
     users = friends.filter((item: any) => !idsInMember.has(item.id))
   }
 
   const addUser = (user: any) => {
-    members.push(user)
-    members = members
+    selectedGroup.members.push(user)
+    selectedGroup.members = selectedGroup.members
     getListFriends()
   }
 
   const removeUser = (user: any) => {
-    members = members.filter((item: any) => item.id !== user.id)
+    selectedGroup.members = selectedGroup.members.filter((item: any) => item.id !== user.id)
     getListFriends()
   }
+
+  const viewGroup = (group: any) => {
+    goto(`/groups/${group.id}`)
+    selectedGroup = group
+    tabIndex = 1
+  }
+
+  const mapGroup = (group: any) => {}
 
   $: groups && calcluateBackground()
 
@@ -46,13 +66,13 @@
         if (index >= 4) break
         let member = group.members[index]
         if (!member.avatar_url) {
-          member.background = getRandomColor()
+          member.background = getColorByText(member.full_name)
         }
       }
     }
   }
 
-  $: validationGroup = !!groupName && members.length >= MIN_NUM_MEMBERS
+  $: validationGroup = !!selectedGroup.name && selectedGroup.members.length >= MIN_NUM_MEMBERS
 </script>
 
 <svelte:head>
@@ -69,14 +89,21 @@
 <div class="content__inner">
   <Tab
     bind:tabIndex
-    tabs={['Total Groups: ' + groups.length, 'Make a New Group']}
+    tabs={['Total Groups: ' + groups.length, 'Create/Edit a Group']}
   ></Tab>
   {#if tabIndex == 0}
     <div class="row groups">
       {#each groups as group}
         <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
           <div class="groups__item">
-            <a href="">
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div
+              on:click={() => {
+                viewGroup(group)
+              }}
+              class="group-hover"
+            >
               <div class="groups__img">
                 {#each group.members as member, index}
                   {#if index < 4}
@@ -98,7 +125,7 @@
                 <strong>{group.name}</strong>
                 <small>{group.members.length} Members</small>
               </div>
-            </a>
+            </div>
           </div>
         </div>
       {/each}
@@ -140,8 +167,8 @@
               aria-label="Sizing example input"
               aria-describedby="inputGroup-sizing-default"
               placeholder="Enter group name"
-              bind:value={groupName}
-              class:is-invalid={!groupName}
+              bind:value={selectedGroup.name}
+              class:is-invalid={!selectedGroup.name}
             />
             <div class="invalid-feedback">
               {MESSAGE.ERROR_GROUP_NAME_NOT_VALID}
@@ -149,7 +176,7 @@
           </div>
         </div>
         <div class="row" style="margin-left: 10px;">
-          <div class:is-invalid={members.length < MIN_NUM_MEMBERS}>
+          <div class:is-invalid={selectedGroup.members.length < MIN_NUM_MEMBERS}>
             Selected Members:
           </div>
           <div class="invalid-feedback">
@@ -160,7 +187,7 @@
           <div class="col-sm-12">
             <ListUsers
               buttonText="Remove"
-              users={members}
+              users={selectedGroup.members}
               handlerItem={removeUser}
               buttonStyle="btn-warning"
               excludeActionItems={[currentUser.id]}
@@ -171,7 +198,9 @@
           <div class="col-sm-12">
             <div class="d-flex justify-content-end col-sm-12">
               <button class="btn btn-primary" disabled={!validationGroup}
-                >Create Group</button
+                >
+                {selectedGroup.id ? 'Update Group' : 'Create Group'}
+                </button
               >
             </div>
           </div>
@@ -270,5 +299,13 @@
 
   .padding-box {
     padding: 20px 20px 0px 20px;
+  }
+
+  .group-hover {
+    cursor: pointer;
+  }
+
+  .group-hover:hover {
+    text-decoration: underline;
   }
 </style>

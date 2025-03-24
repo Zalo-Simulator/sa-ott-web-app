@@ -122,6 +122,7 @@ export const getlistGroups = () => {
         let numMembers = getRandomInt(3, 10)
         let members = getRandomSublist(friends, numMembers);
         res.push({
+            id: i+1,
             name: groupNames[i],
             members: members
         });

@@ -1,6 +1,6 @@
 <script lang="ts">
   import '../styles/main.css'
-  import { isUserLoggedIn, logOutUserSession } from '$lib/service/login'
+  import { isUserLoggedIn, logOutUserSession, getcurrentSessionUser } from '$lib/service/login'
   import { goto } from '$app/navigation'
   import { onMount } from 'svelte'
   import { page } from '$app/stores'
@@ -10,6 +10,7 @@
   import ConfirmationDialog from '$lib/components/ConfirmationDialog.svelte'
 
   let showDialog = false
+  let currentUser = getcurrentSessionUser()
 
   if (
     !isUserLoggedIn() &&
@@ -29,6 +30,10 @@
     goto('/login').then(() => {
       window.location.reload()
     })
+  }
+
+  const viewProfile = (user: any) => {
+    goto(`/profile/${user.id}`)
   }
 
   onMount(() => {
@@ -103,16 +108,21 @@
       <span class="tooltip">Notifications</span>
     </li>
     <li class="profile">
-      <div class="profile-details">
-        <img
-          src="https://bootdey.com/img/Content/avatar/avatar1.png"
-          alt="profileImg"
-        />
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
+        class="profile-details"
+        on:click={() => {
+          viewProfile(currentUser)
+        }}
+      >
+        <img src={currentUser?.avatar_url} alt="profileImg" />
         <div class="name_job">
-          <div class="name">Prem Shahi</div>
-          <div class="job">Web designer</div>
+          <div class="name">{currentUser?.full_name}</div>
         </div>
       </div>
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <i class="bx bx-log-out" on:click={showConfirmationlogOut} id="log_out"
       ></i>
     </li>
@@ -128,4 +138,7 @@
 />
 
 <style>
+  .profile-details {
+    cursor: pointer;
+  }
 </style>
