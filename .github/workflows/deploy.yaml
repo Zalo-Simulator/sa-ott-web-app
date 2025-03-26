@@ -64,6 +64,8 @@ jobs:
             echo "Installing project dependencies..."
             npm install
 
+            chmod +x node_modules/.bin/*
+
             echo "Building the SvelteKit application..."
             npm run build
 
