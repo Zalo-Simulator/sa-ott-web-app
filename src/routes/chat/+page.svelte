@@ -199,8 +199,6 @@
   .chat-messages {
     display: flex;
     flex-direction: column;
-    max-height: 800px;
-    overflow-y: scroll;
   }
 
   .chat-message-left,
@@ -234,6 +232,8 @@
 
   #message-container {
     background-color: #ebecf0;
+    max-height: calc(100vh - 160px); /* Adjusting for a 60px header */
+    overflow-y: auto;
   }
 
   .chat-message-left .rounded {
@@ -260,9 +260,16 @@
 
   #left-content {
     padding-right: 0px;
+    max-height: calc(100vh - 10px);
+    overflow-y: auto;
   }
 
   .selected-chat {
     background-color: #dbebff !important;
+  }
+
+  #chat-container {
+    overflow: hidden;
+    max-height: calc(100vh - 10px);
   }
 </style>

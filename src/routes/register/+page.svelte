@@ -21,11 +21,9 @@
 
   const register = async () => {
     const res = await API.post(AUTH_API.register, {
-      full_name: '',
-      email: phoneNumber,
-      password: password,
-      avatar_url: 'http://3.87.160.66:8000',
-      role: 'guest'
+      full_name: 'Test',
+      phone: phoneNumber,
+      password: password
     })
     return res;
   }

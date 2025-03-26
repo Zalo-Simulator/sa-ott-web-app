@@ -55,7 +55,7 @@
         </div>
       </div>
     </div>
-    <div class="col-xl-8">
+    <div class="col-xl-4">
       <!-- Account details card-->
       <div class="card mb-4">
         <div class="card-header">Account Details</div>
@@ -80,7 +80,7 @@
                 type="text"
                 placeholder="Phone number"
                 bind:value={selectedUser.user_name}
-                disabled={currentUser.id != selectedUser.id}
+                disabled={true}
               />
             </div>
             <!-- Save changes button-->
@@ -92,6 +92,44 @@
         </div>
       </div>
     </div>
+    {#if currentUser.id == selectedUser.id}
+      <div class="col-xl-4">
+        <!-- Account details card-->
+        <div class="card mb-4">
+          <div class="card-header">Change password</div>
+          <div class="card-body">
+            <form>
+              <!-- Form Group (username)-->
+              <div class="mb-3">
+                <label class="mb-1" for="inputUsername">New Password</label>
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="New Password"
+                />
+              </div>
+              <!-- Form Group (email address)-->
+              <div class="mb-3">
+                <label class="mb-1" for="inputEmailAddress"
+                  >Repeat new password</label
+                >
+                <input
+                  class="form-control"
+                  type="text"
+                  placeholder="Repeat new password"
+                />
+              </div>
+              <!-- Save changes button-->
+              {#if currentUser.id == selectedUser.id}
+                <button class="btn btn-primary" type="button"
+                  >Save changes</button
+                >
+              {/if}
+            </form>
+          </div>
+        </div>
+      </div>
+    {/if}
   </div>
 </div>
 
