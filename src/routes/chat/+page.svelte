@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getlistFriends } from '$lib/service/user'
+  import { getlistFriends, testGetUserbyAPI } from '$lib/service/user'
   import { getcurrentSessionUser } from '$lib/service/login'
   import { onMount } from 'svelte'
   import Avatar from '$lib/components/Avatar.svelte'
@@ -11,12 +11,14 @@
   let currentUser = getcurrentSessionUser()
   let searchText = ''
 
-  onMount(() => {
+  onMount(async () => {
     friends = getlistFriends()
     friends[0].unread = 5
     friends[1].unread = 2
     selectedPerson = friends[0]
     filterFriends = friends
+
+    //await testGetUserbyAPI('3')
   })
 
   const searchFriend = () => {

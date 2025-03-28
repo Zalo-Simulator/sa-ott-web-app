@@ -20,8 +20,12 @@
   }
 
   const register = async () => {
-    const res = await API.post(AUTH_API.register, {
-      full_name: 'Test',
+    await API.post(AUTH_API.register, {
+      full_name: phoneNumber,
+      phone: phoneNumber,
+      password: password
+    })
+    const res = await API.post(AUTH_API.login, {
       phone: phoneNumber,
       password: password
     })

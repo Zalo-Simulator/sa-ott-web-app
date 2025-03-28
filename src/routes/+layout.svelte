@@ -8,6 +8,8 @@
   import Loader from '$lib/components/loader/Loader.svelte'
   import { SvelteToast } from '@zerodevx/svelte-toast'
   import ConfirmationDialog from '$lib/components/ConfirmationDialog.svelte'
+  // import API from '$lib/api/Interceptor'
+  // import { AUTH_API } from '$lib/api/API-Endpoint'
 
   let showDialog = false
   let currentUser = getcurrentSessionUser()
@@ -25,8 +27,12 @@
     showDialog = true
   }
 
-  const logOut = () => {
+  const logOut = async () => {
     logOutUserSession()
+    // await API.post(AUTH_API.logout, {
+    //   phone: "0933144211",
+    //   password: "TY67a6s#aa"
+    // })
     goto('/login').then(() => {
       window.location.reload()
     })

@@ -2,6 +2,7 @@
 import { toast } from "@zerodevx/svelte-toast";
 import { loader } from "$lib/components/loader/loader";
 import { TOAST_THEME } from "$lib/constants/constants";
+import { getUserSession } from "$lib/service/login"
 
 // implement a method to execute all the request from here.
 const apiRequest = async (
@@ -16,10 +17,17 @@ const apiRequest = async (
         loader.showLoader();
     }
     try {
+
+        const session: any = getUserSession();
+        let token = ''
+        if (session) {
+            token = JSON.parse(session).access_token
+        }
+
         let options = {
             method: method,
             body: JSON.stringify(request),
-            headers: { accept: "application/json", "content-type": "application/json" }
+            headers: { accept: "application/json", "content-type": "application/json", "Authorization": `Bearer ${token}` }
         }
 
         const response = await fetch(url, options);

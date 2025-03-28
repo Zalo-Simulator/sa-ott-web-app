@@ -4,8 +4,8 @@ export const isUserLoggedIn = () => {
     return !!sessionStorage.getItem("session-login");
 }
 
-export const logInUserSession = () => {
-    sessionStorage.setItem("session-login", 'Thsdjhskdsjdijskdj3874837484');
+export const logInUserSession = (data:any) => {
+    sessionStorage.setItem("session-login", JSON.stringify(data));
     sessionStorage.setItem("current-user", JSON.stringify(getCurentUser()));
 }
 

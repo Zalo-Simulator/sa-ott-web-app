@@ -1,3 +1,5 @@
+import API from '$lib/api/Interceptor'
+import { USER_API } from '$lib/api/API-Endpoint'
 
 const peopleName = [
     "Alice Johnson", "Bob Smith", "Charlie Brown", "David White", "Emma Wilson",
@@ -122,7 +124,7 @@ export const getlistGroups = () => {
         let numMembers = getRandomInt(3, 10)
         let members = getRandomSublist(friends, numMembers);
         res.push({
-            id: i+1,
+            id: i + 1,
             name: groupNames[i],
             members: members
         });
@@ -141,4 +143,10 @@ export const getCurentUser = () => {
 
 export const getUserById = (id: number) => {
     return people.find(item => item.id == id);
+}
+
+
+export const testGetUserbyAPI = async (userId: string) => {
+    const res = await API.get(USER_API.getUser.replaceAll("{id}", userId))
+    return res;
 }

@@ -104,7 +104,7 @@
       const res = await finishHandler()
 
       if (res) {
-        logInUserSession()
+        logInUserSession(res.data)
         goto('/chat').then(() => {
           window.location.reload()
         })

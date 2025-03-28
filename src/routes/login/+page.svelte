@@ -17,15 +17,15 @@
 
   const login = async () => {
     const res = await API.post(AUTH_API.login, {
-      username: phoneNumber,
+      phone: phoneNumber,
       password: password
     })
-    //if (res) {
-      logInUserSession()
+    if (res) {
+      logInUserSession(res.data)
       goto('/chat').then(() => {
         window.location.reload()
       })
-    //}
+    }
   }
 
   let phoneNumber = ''
