@@ -58,6 +58,7 @@ jobs:
               cd $PROJECT_DIR
               git fetch origin
               git reset --hard origin/main
+              chmod +x node_modules/.bin/svelte-kit
               git pull -X theirs origin main
             fi
 
