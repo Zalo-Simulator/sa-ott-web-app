@@ -6,8 +6,10 @@
   import { pageHomeClass } from '$lib/service/store'
   import API from '$lib/api/Interceptor'
   import { AUTH_API } from '$lib/api/API-Endpoint'
+  import { MESSAGE } from '$lib/constants/message'
 
   pageHomeClass.set('disable-menu')
+  let isValidLogin = true
 
   if (isUserLoggedIn()) {
     goto('/chat').then(() => {
@@ -21,10 +23,13 @@
       password: password
     })
     if (res) {
+      isValidLogin = true
       logInUserSession(res.data)
       goto('/chat').then(() => {
         window.location.reload()
       })
+    } else {
+      isValidLogin = false
     }
   }
 
@@ -68,17 +73,20 @@
                 class="form-control"
                 placeholder="Phone number"
                 bind:value={phoneNumber}
+                class:is-invalid={!isValidLogin}
               />
             </div>
-            <div class="input-group mb-4">
+            <div class="input-group mb-4" class:is-invalid={!isValidLogin}>
               <span class="input-group-addon"><i class="fa fa-lock"></i></span>
               <input
                 type="password"
                 class="form-control"
                 placeholder="Password"
                 bind:value={password}
+                class:is-invalid={!isValidLogin}
               />
             </div>
+            <div class="invalid-feedback">{MESSAGE.ERROR_ACCOUNT_INVALID}</div>
             <div class="row">
               <div class="col-6">
                 <button
@@ -202,5 +210,10 @@
     border: 1px solid white;
     border-left: none;
     background-color: transparent;
+  }
+
+  .invalid-feedback {
+    margin-top: -20px;
+    padding-bottom: 10px;
   }
 </style>

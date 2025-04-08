@@ -37,10 +37,9 @@ const apiRequest = async (
 
             const responseJSON = await response.json();
             let message = responseJSON?.detail[0]?.msg;
-            if (!message) {
-                message = 'Unexpected error happened!';
+            if (message) {
+                toast.push(message, TOAST_THEME.ERROR);
             }
-            toast.push(message, TOAST_THEME.ERROR);
             return;
         }
 

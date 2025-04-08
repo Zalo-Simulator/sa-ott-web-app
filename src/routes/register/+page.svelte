@@ -23,7 +23,8 @@
     await API.post(AUTH_API.register, {
       full_name: phoneNumber,
       phone: phoneNumber,
-      password: password
+      password: password,
+      avatar_url: ""
     })
     const res = await API.post(AUTH_API.login, {
       phone: phoneNumber,
