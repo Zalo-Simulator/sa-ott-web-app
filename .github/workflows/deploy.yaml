@@ -56,7 +56,10 @@ jobs:
             else
               echo "Repository exists. Pulling latest changes..."
               cd $PROJECT_DIR
-              git pull origin main
+              git fetch origin
+              git reset --hard origin/main
+              chmod +x node_modules/.bin/svelte-kit
+              git pull -X theirs origin main
             fi
 
             cd $PROJECT_DIR
