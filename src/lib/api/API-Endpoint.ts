@@ -1,4 +1,5 @@
 const URL_PREFIX = "http://52.23.164.179:8000";
+const WEBSOCKET_PREFIX = "ws://52.23.164.179:8000/ws/users";
 
 export const AUTH_API = {
     login: `${URL_PREFIX}/auth/login`,
@@ -28,4 +29,8 @@ export const USER_API = {
 export const MEDIA_API = {
     upload: `${URL_PREFIX}/medias/upload?is_public=true&bucket=zalo-private-test`,
     download: `${URL_PREFIX}/medias/get-public-file-url?s3_key={s3_key}&is_public=true&bucket=zalo-private-test`
+}
+
+export const WEBSOCKET = {
+    connect: `${WEBSOCKET_PREFIX}/{id}`
 }

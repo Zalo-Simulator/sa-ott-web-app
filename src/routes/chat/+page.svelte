@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { getlistFriends, getUserbyId } from '$lib/service/user'
+  import { getlistFriends } from '$lib/service/user'
   import { getCurrentSessionUser } from '$lib/service/login'
   import { onMount } from 'svelte'
   import Avatar from '$lib/components/Avatar.svelte'
+  import { WebSocketClient } from '$lib/service/web-socket-client'
+  import { WEBSOCKET } from '$lib/api/API-Endpoint'
 
   let friends: any = []
   let filterFriends: any = []
@@ -18,7 +20,17 @@
     selectedPerson = friends[0]
     filterFriends = friends
 
-    //await getUserbyId('3')
+    const wsClient = new WebSocketClient(
+      WEBSOCKET.connect.replace('{id}', currentUser.id)
+    )
+
+    wsClient.sendMessage({
+      message: 'Hello',
+      group_id: 2,
+      message_type: 'text'
+    })
+
+    wsClient.closeConnection()
   })
 
   const searchFriend = () => {
