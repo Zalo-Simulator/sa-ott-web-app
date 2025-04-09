@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getCurrentSessionUser } from '$lib/service/login'
+  import { getCurrentSessionUser, updateUserSession } from '$lib/service/login'
   import { getUserbyId } from '$lib/service/user'
   import { page } from '$app/stores'
   import { isValidPassword } from '$lib/utils/validation'
@@ -64,6 +64,7 @@
   }
 
   const updateUser = async () => {
+    updateUserSession(selectedUser)
     let res = await API.put(
       USER_API.updateUser.replaceAll('{id}', selectedUser.id),
       {
@@ -110,7 +111,13 @@
       }
 
       const result = await response.json()
-      console.log('Upload successful:', result)
+
+      const downloadRes = await API.get(
+        MEDIA_API.download.replace('{s3_key}', result.data.key)
+      )
+      selectedUser.avatar_url = downloadRes.data.url
+      //update to session & database
+      updateUser()
     } catch (error) {
       console.error('Error uploading file:', error)
     }

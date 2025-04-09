@@ -9,7 +9,7 @@ export class WebSocketClient {
     private initialize() {
         this.socket.addEventListener('open', () => {
             console.log('Connected to WebSocket server');
-            this.sendMessage({ type: 'greeting', message: 'Hello Server!' });
+            //this.sendMessage({ type: 'greeting', message: 'Hello Server!' });
         });
 
         this.socket.addEventListener('message', (event) => {

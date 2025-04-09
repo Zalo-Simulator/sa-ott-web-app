@@ -4,15 +4,15 @@ export const isUserLoggedIn = () => {
 
 export const logInUserSession = (data: any, phone: string) => {
     sessionStorage.setItem("session-login", JSON.stringify({
-        access_token: data.access_token, 
+        access_token: data.access_token,
         token_type: data.token_type
     }));
-    sessionStorage.setItem("current-user", JSON.stringify({
+    updateUserSession({
         id: data.id,
         full_name: data.full_name,
         avatar_url: data.avatar_url,
         phone: phone
-    }));
+    })
 }
 
 export const logOutUserSession = () => {
@@ -22,6 +22,10 @@ export const logOutUserSession = () => {
 
 export const getUserSession = () => {
     return sessionStorage.getItem("session-login");
+}
+
+export const updateUserSession = (currentUser: any) => {
+    sessionStorage.setItem("current-user", JSON.stringify(currentUser));
 }
 
 export const getCurrentSessionUser = () => {

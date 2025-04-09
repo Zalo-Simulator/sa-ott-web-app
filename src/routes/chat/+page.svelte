@@ -24,11 +24,11 @@
       WEBSOCKET.connect.replace('{id}', currentUser.id)
     )
 
-    wsClient.sendMessage({
-      message: 'Hello',
-      group_id: 2,
-      message_type: 'text'
-    })
+    // wsClient.sendMessage({
+    //   message: 'Hello',
+    //   group_id: 2,
+    //   message_type: 'text'
+    // })
 
     wsClient.closeConnection()
   })
