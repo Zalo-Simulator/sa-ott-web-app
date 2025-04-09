@@ -24,7 +24,7 @@
     })
     if (res) {
       isValidLogin = true
-      logInUserSession(res.data)
+      logInUserSession(res.data, phoneNumber)
       goto('/chat').then(() => {
         window.location.reload()
       })

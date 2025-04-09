@@ -132,21 +132,7 @@ export const getlistGroups = () => {
     return res;
 }
 
-export const getCurentUser = () => {
-    return {
-        id: people[0].id,
-        full_name: people[0].full_name,
-        avatar_url: avartars[0],
-        is_active: true
-    }
-}
-
-export const getUserById = (id: number) => {
-    return people.find(item => item.id == id);
-}
-
-
-export const testGetUserbyAPI = async (userId: string) => {
+export const getUserbyId = async (userId: string) => {
     const res = await API.get(USER_API.getUser.replaceAll("{id}", userId))
     return res;
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getlistFriends, testGetUserbyAPI } from '$lib/service/user'
+  import { getlistFriends, getUserbyId } from '$lib/service/user'
   import { getCurrentSessionUser } from '$lib/service/login'
   import { onMount } from 'svelte'
   import Avatar from '$lib/components/Avatar.svelte'
@@ -18,7 +18,7 @@
     selectedPerson = friends[0]
     filterFriends = friends
 
-    //await testGetUserbyAPI('3')
+    //await getUserbyId('3')
   })
 
   const searchFriend = () => {

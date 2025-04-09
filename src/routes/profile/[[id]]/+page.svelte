@@ -1,28 +1,43 @@
 <script lang="ts">
   import { getCurrentSessionUser } from '$lib/service/login'
-  import { getUserById } from '$lib/service/user'
+  import { getUserbyId } from '$lib/service/user'
   import { page } from '$app/stores'
   import { isValidPassword } from '$lib/utils/validation'
   import { MESSAGE } from '$lib/constants/message'
   import API from '$lib/api/Interceptor'
-  import { AUTH_API } from '$lib/api/API-Endpoint'
-  let currentUser = getCurrentSessionUser()
-  let selectedUser = {}
+  import { AUTH_API, USER_API, MEDIA_API } from '$lib/api/API-Endpoint'
+  import { onMount } from 'svelte'
+  import UserImage from '../../../imgs/User Frame Black.png'
+  import { getUserSession } from '$lib/service/login'
 
+  let currentUser = getCurrentSessionUser()
+  let selectedUser = {
+    id: '0',
+    full_name: '',
+    phone: '',
+    avatar_url: ''
+  }
   let oldPassword = ''
   let newPassword = ''
   let repeatPassword = ''
-
+  let fileInput: any
   let userId = $page.params.id
-  if (userId) {
-    let user = getUserById(parseInt(userId))
-    if (user) {
-      selectedUser = user
+
+  onMount(async () => {
+    getUser()
+  })
+
+  const getUser = async () => {
+    if (userId && userId != currentUser.id) {
+      let user = await getUserbyId(userId)
+      if (user.data) {
+        selectedUser = user.data
+      } else {
+        selectedUser = currentUser
+      }
     } else {
       selectedUser = currentUser
     }
-  } else {
-    selectedUser = currentUser
   }
 
   $: passwordValid = isValidPassword(newPassword)
@@ -33,15 +48,72 @@
     newPassword == repeatPassword
 
   const changePassword = async () => {
-    let res = await API.put(AUTH_API.changePassword, {
-      current_password: oldPassword,
-      new_password: newPassword
-    }, MESSAGE.SUCCESS_CHANGE_PASSWORD)
+    let res = await API.put(
+      AUTH_API.changePassword,
+      {
+        current_password: oldPassword,
+        new_password: newPassword
+      },
+      MESSAGE.SUCCESS_CHANGE_PASSWORD
+    )
 
     oldPassword = ''
     newPassword = ''
     repeatPassword = ''
     return res
+  }
+
+  const updateUser = async () => {
+    let res = await API.put(
+      USER_API.updateUser.replaceAll('{id}', selectedUser.id),
+      {
+        full_name: selectedUser.full_name,
+        avatar_url: selectedUser.avatar_url || '',
+        is_active: true
+      },
+      MESSAGE.SUCCESS_CHANGE_ACCOUNT
+    )
+    return res
+  }
+
+  const uploadProfileImage = async (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const files = target.files
+
+    if (!files || files.length === 0) {
+      alert('No file selected')
+      return
+    }
+
+    const file = files[0]
+    const formData = new FormData()
+    formData.append('user_id', selectedUser.id)
+    formData.append('file', file)
+
+    try {
+      const session: any = getUserSession()
+      let token = ''
+      if (session) {
+        token = JSON.parse(session).access_token
+      }
+
+      const response = await fetch(MEDIA_API.upload, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      console.log('Upload successful:', result)
+    } catch (error) {
+      console.error('Error uploading file:', error)
+    }
   }
 </script>
 
@@ -66,7 +138,7 @@
           <!-- Profile picture image-->
           <img
             class="img-account-profile rounded-circle mb-2"
-            src="http://bootdey.com/img/Content/avatar/avatar1.png"
+            src={selectedUser?.avatar_url || UserImage}
             alt=""
           />
           {#if currentUser.id == selectedUser.id}
@@ -75,9 +147,17 @@
               JPG or PNG no larger than 5 MB
             </div>
             <!-- Profile picture upload button-->
-            <button class="btn btn-primary" type="button"
-              >Upload new image</button
+            <button
+              class="btn btn-primary"
+              type="button"
+              on:click={() => fileInput.click()}>Upload new image</button
             >
+            <input
+              type="file"
+              bind:this={fileInput}
+              on:change={uploadProfileImage}
+              style="display: none;"
+            />
           {/if}
         </div>
       </div>
@@ -105,14 +185,18 @@
               <input
                 class="form-control"
                 type="text"
-                placeholder="Phone number"
-                bind:value={selectedUser.user_name}
+                placeholder="Private information"
+                bind:value={selectedUser.phone}
                 disabled={true}
               />
             </div>
             <!-- Save changes button-->
             {#if currentUser.id == selectedUser.id}
-              <button class="btn btn-primary" type="button">Save changes</button
+              <button
+                class="btn btn-primary"
+                type="button"
+                disabled={!selectedUser.full_name}
+                on:click={updateUser}>Save changes</button
               >
             {/if}
           </form>

@@ -7,5 +7,6 @@ export const MESSAGE = {
     ERROR_ACCOUNT_INVALID : 'Phone number or password are invalid',
     
     
-    SUCCESS_CHANGE_PASSWORD : 'Your password is changed successfully!',
+    SUCCESS_CHANGE_PASSWORD : 'Your password has been changed successfully!',
+    SUCCESS_CHANGE_ACCOUNT : 'Your account has been changed successfully!',
 }

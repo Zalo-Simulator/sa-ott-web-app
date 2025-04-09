@@ -12,7 +12,9 @@ export const AUTH_API = {
 
 export const USER_API = {
     getUser: `${URL_PREFIX}/users/{id}`,
+    getCurrentUser: `${URL_PREFIX}/users/me`,
     updateUser: `${URL_PREFIX}/users/{id}`,
+
     getContacts: `${URL_PREFIX}/users/{id}/contacts`,
     updateContact: `${URL_PREFIX}/users/{id}/contacts/{user_id}`,
     getGroups: `${URL_PREFIX}/users/{id}/groups`,
@@ -22,3 +24,8 @@ export const USER_API = {
     removeGroupMember: `${URL_PREFIX}/users/groups/{id}/members/{user_id}`,
     
 };
+
+export const MEDIA_API = {
+    upload: `${URL_PREFIX}/medias/upload?is_public=true&bucket=zalo-private-test`,
+    download: `${URL_PREFIX}/medias/get-public-file-url?s3_key={s3_key}&is_public=true&bucket=zalo-private-test`
+}
