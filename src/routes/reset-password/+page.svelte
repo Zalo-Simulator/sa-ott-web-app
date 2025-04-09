@@ -21,7 +21,7 @@
 
   const resetPassword = async () => {
     await API.post(AUTH_API.resetPassword, {
-      username: phoneNumber,
+      phone: phoneNumber,
       password: password,
     })
     const res = await API.post(AUTH_API.login, {

@@ -1,6 +1,10 @@
 <script lang="ts">
   import '../styles/main.css'
-  import { isUserLoggedIn, logOutUserSession, getcurrentSessionUser } from '$lib/service/login'
+  import {
+    isUserLoggedIn,
+    logOutUserSession,
+    getCurrentSessionUser
+  } from '$lib/service/login'
   import { goto } from '$app/navigation'
   import { onMount } from 'svelte'
   import { page } from '$app/stores'
@@ -8,11 +12,12 @@
   import Loader from '$lib/components/loader/Loader.svelte'
   import { SvelteToast } from '@zerodevx/svelte-toast'
   import ConfirmationDialog from '$lib/components/ConfirmationDialog.svelte'
-  // import API from '$lib/api/Interceptor'
-  // import { AUTH_API } from '$lib/api/API-Endpoint'
+  import UserImage from '../imgs/User Frame.png'
+  import API from '$lib/api/Interceptor'
+  import { AUTH_API } from '$lib/api/API-Endpoint'
 
   let showDialog = false
-  let currentUser = getcurrentSessionUser()
+  let currentUser = getCurrentSessionUser()
 
   if (
     !isUserLoggedIn() &&
@@ -20,7 +25,9 @@
     $page.url.pathname.toLocaleLowerCase() != '/login' &&
     $page.url.pathname.toLocaleLowerCase() != '/reset-password'
   ) {
-    goto('/login')
+    goto('/login').then(() => {
+      window.location.reload()
+    })
   }
 
   const showConfirmationlogOut = () => {
@@ -28,18 +35,17 @@
   }
 
   const logOut = async () => {
+    await API.post(AUTH_API.logout, {})
     logOutUserSession()
-    // await API.post(AUTH_API.logout, {
-    //   phone: "0933144211",
-    //   password: "TY67a6s#aa"
-    // })
     goto('/login').then(() => {
       window.location.reload()
     })
   }
 
   const viewProfile = (user: any) => {
-    goto(`/profile/${user.id}`)
+    goto(`/profile/${user.id}`).then(() => {
+      window.location.reload()
+    })
   }
 
   onMount(() => {
@@ -122,7 +128,7 @@
           viewProfile(currentUser)
         }}
       >
-        <img src={currentUser?.avatar_url} alt="profileImg" />
+        <img src={currentUser?.avatar_url || UserImage} alt="profileImg" />
         <div class="name_job">
           <div class="name">{currentUser?.full_name}</div>
         </div>

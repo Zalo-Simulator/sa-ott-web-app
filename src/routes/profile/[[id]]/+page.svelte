@@ -1,9 +1,17 @@
 <script lang="ts">
-  import { getcurrentSessionUser } from '$lib/service/login'
+  import { getCurrentSessionUser } from '$lib/service/login'
   import { getUserById } from '$lib/service/user'
   import { page } from '$app/stores'
-  let currentUser = getcurrentSessionUser()
+  import { isValidPassword } from '$lib/utils/validation'
+  import { MESSAGE } from '$lib/constants/message'
+  import API from '$lib/api/Interceptor'
+  import { AUTH_API } from '$lib/api/API-Endpoint'
+  let currentUser = getCurrentSessionUser()
   let selectedUser = {}
+
+  let oldPassword = ''
+  let newPassword = ''
+  let repeatPassword = ''
 
   let userId = $page.params.id
   if (userId) {
@@ -15,6 +23,25 @@
     }
   } else {
     selectedUser = currentUser
+  }
+
+  $: passwordValid = isValidPassword(newPassword)
+  $: validationPassword =
+    !!oldPassword &&
+    !!newPassword &&
+    passwordValid &&
+    newPassword == repeatPassword
+
+  const changePassword = async () => {
+    let res = await API.put(AUTH_API.changePassword, {
+      current_password: oldPassword,
+      new_password: newPassword
+    }, MESSAGE.SUCCESS_CHANGE_PASSWORD)
+
+    oldPassword = ''
+    newPassword = ''
+    repeatPassword = ''
+    return res
   }
 </script>
 
@@ -33,7 +60,7 @@
   <div class="row">
     <div class="col-xl-4">
       <!-- Profile picture card-->
-      <div class="card mb-4 mb-xl-0">
+      <div class="card mb-4 mb-xl-0 full-box">
         <div class="card-header">Profile Picture</div>
         <div class="card-body text-center">
           <!-- Profile picture image-->
@@ -57,7 +84,7 @@
     </div>
     <div class="col-xl-4">
       <!-- Account details card-->
-      <div class="card mb-4">
+      <div class="card mb-4 full-box">
         <div class="card-header">Account Details</div>
         <div class="card-body">
           <form>
@@ -95,18 +122,32 @@
     {#if currentUser.id == selectedUser.id}
       <div class="col-xl-4">
         <!-- Account details card-->
-        <div class="card mb-4">
+        <div class="card mb-4 full-box">
           <div class="card-header">Change password</div>
           <div class="card-body">
             <form>
               <!-- Form Group (username)-->
               <div class="mb-3">
+                <label class="mb-1" for="inputUsername">Old Password</label>
+                <input
+                  class="form-control"
+                  type="password"
+                  placeholder="Old Password"
+                  bind:value={oldPassword}
+                />
+              </div>
+              <div class="mb-3">
                 <label class="mb-1" for="inputUsername">New Password</label>
                 <input
                   class="form-control"
-                  type="text"
+                  type="password"
                   placeholder="New Password"
+                  bind:value={newPassword}
+                  class:is-invalid={!!newPassword && !passwordValid}
                 />
+                <div class="invalid-feedback">
+                  {MESSAGE.ERROR_PASSWORD_INVALID}
+                </div>
               </div>
               <!-- Form Group (email address)-->
               <div class="mb-3">
@@ -115,16 +156,22 @@
                 >
                 <input
                   class="form-control"
-                  type="text"
+                  type="password"
                   placeholder="Repeat new password"
+                  bind:value={repeatPassword}
+                  class:is-invalid={!!repeatPassword &&
+                    repeatPassword != newPassword}
                 />
+                <div class="invalid-feedback">
+                  {MESSAGE.ERROR_PASSWORD_NOT_SAME}
+                </div>
               </div>
-              <!-- Save changes button-->
-              {#if currentUser.id == selectedUser.id}
-                <button class="btn btn-primary" type="button"
-                  >Save changes</button
-                >
-              {/if}
+              <button
+                class="btn btn-primary"
+                type="button"
+                disabled={!validationPassword}
+                on:click={changePassword}>Save changes</button
+              >
             </form>
           </div>
         </div>
@@ -173,5 +220,9 @@
     transition:
       border-color 0.15s ease-in-out,
       box-shadow 0.15s ease-in-out;
+  }
+
+  .full-box {
+    height: 95%;
   }
 </style>

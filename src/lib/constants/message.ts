@@ -6,4 +6,6 @@ export const MESSAGE = {
     ERROR_MEMBERS_NOT_VALID: 'Must have at least 3 members in the group',
     ERROR_ACCOUNT_INVALID : 'Phone number or password are invalid',
     
+    
+    SUCCESS_CHANGE_PASSWORD : 'Your password is changed successfully!',
 }

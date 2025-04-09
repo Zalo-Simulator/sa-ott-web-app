@@ -5,7 +5,7 @@
   import { getColorByText } from '$lib/utils/common'
   import { onMount } from 'svelte'
   import { MESSAGE } from '$lib/constants/message'
-  import { getcurrentSessionUser } from '$lib/service/login'
+  import { getCurrentSessionUser } from '$lib/service/login'
   import { page } from '$app/stores'
   import { goto } from '$app/navigation'
 
@@ -14,7 +14,7 @@
   let users: any = []
   let searchText: string = ''
   const MIN_NUM_MEMBERS = 3
-  let currentUser = getcurrentSessionUser()
+  let currentUser = getCurrentSessionUser()
   let groupId = $page.params.id
   let selectedGroup = {
     id: 0,

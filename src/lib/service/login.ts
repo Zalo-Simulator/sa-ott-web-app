@@ -1,12 +1,17 @@
-import { getCurentUser } from "$lib/service/user"
-
 export const isUserLoggedIn = () => {
     return !!sessionStorage.getItem("session-login");
 }
 
-export const logInUserSession = (data:any) => {
-    sessionStorage.setItem("session-login", JSON.stringify(data));
-    sessionStorage.setItem("current-user", JSON.stringify(getCurentUser()));
+export const logInUserSession = (data: any) => {
+    sessionStorage.setItem("session-login", JSON.stringify({
+        access_token: data.access_token, 
+        token_type: data.token_type
+    }));
+    sessionStorage.setItem("current-user", JSON.stringify({
+        id: data.id,
+        full_name: data.full_name,
+        avatar_url: data.avatar_url
+    }));
 }
 
 export const logOutUserSession = () => {
@@ -18,7 +23,7 @@ export const getUserSession = () => {
     return sessionStorage.getItem("session-login");
 }
 
-export const getcurrentSessionUser = () => {
+export const getCurrentSessionUser = () => {
     let userObject = sessionStorage.getItem("current-user")
     if (userObject) {
         return JSON.parse(userObject);
