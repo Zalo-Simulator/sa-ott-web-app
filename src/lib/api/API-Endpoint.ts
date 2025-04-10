@@ -32,5 +32,6 @@ export const MEDIA_API = {
 }
 
 export const WEBSOCKET = {
-    connect: `${WEBSOCKET_PREFIX}/{id}`
+    connect: `${WEBSOCKET_PREFIX}/{id}`,
+    getConversation: `${URL_PREFIX}/chats/chat/{group_id}?limit=25`,
 }

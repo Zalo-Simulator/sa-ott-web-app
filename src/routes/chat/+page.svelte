@@ -5,15 +5,17 @@
   import Avatar from '$lib/components/Avatar.svelte'
   import { WebSocketClient } from '$lib/service/web-socket-client'
   import { WEBSOCKET } from '$lib/api/API-Endpoint'
+  import API from '$lib/api/Interceptor'
 
   let friends: any = []
   let filterFriends: any = []
   let selectedPerson: any = null
-  let coversation: any = []
+  let conversation: any = []
   let currentUser = getCurrentSessionUser()
   let searchText = ''
   let wsClient: any
   let message = ''
+  let group_id = '1'
 
   onMount(async () => {
     friends = getlistFriends()
@@ -36,6 +38,9 @@
 
   const onMessage = async (data: any) => {
     console.log('Message from server:', data)
+    const msg = JSON.parse(data)
+    conversation.push(msg)
+    conversation = conversation
   }
 
   const searchFriend = () => {
@@ -51,44 +56,14 @@
 
   $: selectedPerson && getChatConversation()
 
-  const getChatConversation = () => {
-    coversation = [
-      {
-        person: currentUser,
-        message:
-          'Lorem ipsum dolor sit amet, vis erat denique in, dicunt prodesset te vix.',
-        time: '2:33 am'
-      },
-      {
-        person: selectedPerson,
-        message:
-          'Sit meis deleniti eu, pri vidit meliore docendi ut, an eum erat animal commodo.',
-        time: '2:34 am'
-      },
-      {
-        person: currentUser,
-        message: 'Cum ea graeci tractatos.',
-        time: '2:35 am'
-      },
-      {
-        person: selectedPerson,
-        message:
-          'Sed pulvinar, massa vitae interdum pulvinar, risus lectus porttitor magna, vitae commodo lectus mauris et velit. Proin ultricies placerat imperdiet. Morbi varius quam ac venenatis tempus.',
-        time: '2:36 am'
-      },
-      {
-        person: selectedPerson,
-        message:
-          'Cras pulvinar, sapien id vehicula aliquet, diam velit elementum orci.',
-        time: '2:37 am'
-      },
-      {
-        person: currentUser,
-        message:
-          'Lorem ipsum dolor sit amet, vis erat denique in, dicunt prodesset te vix.',
-        time: '2:38 am'
-      }
-    ]
+  const getChatConversation = async () => {
+    let res = await API.get(
+      WEBSOCKET.getConversation.replace('{group_id}', group_id)
+    )
+    conversation = res.data.sort(
+      (a: any, b: any) =>
+        new Date(a.time).getTime() - new Date(b.time).getTime()
+    )
   }
 
   let file: any = null
@@ -129,18 +104,28 @@
     message = message.trim()
     if (message) {
       console.log('Sending message:', message.trim())
+      const msg = {
+        message: message,
+        group_id: group_id,
+        message_type: 'text',
+        time: new Date().toString(),
+        person: {
+          id: currentUser.id,
+          full_name: currentUser.full_name,
+          avatar_url: currentUser.avatar_url
+        }
+      }
+      wsClient.sendMessage(msg)
+
       // wsClient.sendMessage({
-      //   message: message,
-      //   group_id: 1,
-      //   message_type: 'text'
+      //   group_id: group_id,
+      //   message_id: 2,
+      //   message_type: 'reaction',
+      //   reaction: '👍'
       // })
 
-      wsClient.sendMessage({
-        group_id: 1,
-        message_id: 2,
-        message_type: "reaction",
-        reaction: "👍"
-      })
+      conversation.push(msg)
+      conversation = conversation
 
       message = ''
     }
@@ -225,7 +210,7 @@
 
           <div id="message-container" class="position-relative">
             <div class="chat-messages p-4">
-              {#each coversation as item}
+              {#each conversation as item}
                 <div
                   class="pb-4"
                   class:chat-message-right={item.person.id == currentUser.id}
@@ -336,6 +321,7 @@
   #message-container {
     background-color: #ebecf0;
     max-height: calc(100vh - 200px); /* Adjusting for a 60px header */
+    height: calc(100vh - 200px); /* Adjusting for a 60px header */
     overflow-y: auto;
   }
 

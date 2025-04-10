@@ -5,7 +5,7 @@
   import { isValidPassword } from '$lib/utils/validation'
   import { MESSAGE } from '$lib/constants/message'
   import API from '$lib/api/Interceptor'
-  import { AUTH_API, USER_API, MEDIA_API } from '$lib/api/API-Endpoint'
+  import { AUTH_API, USER_API } from '$lib/api/API-Endpoint'
   import { onMount } from 'svelte'
   import UserImage from '../../../imgs/User Frame Black.png'
 
