@@ -2,7 +2,8 @@
 import { toast } from "@zerodevx/svelte-toast";
 import { loader } from "$lib/components/loader/loader";
 import { TOAST_THEME } from "$lib/constants/constants";
-import { getUserSession } from "$lib/service/login"
+import { getUserSession, getCurrentSessionUser } from "$lib/service/login"
+import { MEDIA_API } from '$lib/api/API-Endpoint'
 
 // implement a method to execute all the request from here.
 const apiRequest = async (
@@ -50,6 +51,57 @@ const apiRequest = async (
             toast.push(message, toastTheme || TOAST_THEME.SUCCESS);
         }
         return responseJSON;
+    } catch (error) {
+        loader.hideLoader();
+    }
+
+};
+
+const fileRequest = async (
+    file: any
+) => {
+    loader.showLoader();
+    try {
+
+        const currentUser = getCurrentSessionUser()
+        const session: any = getUserSession();
+
+        const formData = new FormData()
+        formData.append('user_id', currentUser.id)
+        formData.append('file', file)
+
+        let token = ''
+        if (session) {
+            token = JSON.parse(session).access_token
+        }
+
+        const response = await fetch(MEDIA_API.upload, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        })
+
+        if (!response.ok) {
+            loader.hideLoader();
+
+            const responseJSON = await response.json();
+            let message = responseJSON?.detail[0]?.msg;
+            if (message) {
+                toast.push(message, TOAST_THEME.ERROR);
+            }
+            return;
+        }
+
+        const responseJSON = await response.json();
+
+        const downloadRes = await get(
+            MEDIA_API.download.replace('{s3_key}', responseJSON.data.key)
+        )
+
+        loader.hideLoader();
+        return downloadRes.data.url;
     } catch (error) {
         loader.hideLoader();
     }
@@ -107,6 +159,7 @@ const API = {
     delete: deleteRequest,
     post,
     put,
-    patch
+    patch,
+    fileRequest
 };
 export default API;

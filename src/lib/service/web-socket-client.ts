@@ -1,7 +1,8 @@
 export class WebSocketClient {
     private socket: WebSocket;
 
-    constructor(private url: string) {
+    constructor(private url: string,
+        private messageHandler?: (data: any) => void) {
         this.socket = new WebSocket(this.url);
         this.initialize();
     }
@@ -9,11 +10,12 @@ export class WebSocketClient {
     private initialize() {
         this.socket.addEventListener('open', () => {
             console.log('Connected to WebSocket server');
-            //this.sendMessage({ type: 'greeting', message: 'Hello Server!' });
         });
 
         this.socket.addEventListener('message', (event) => {
-            console.log('Message from server:', event.data);
+            if (this.messageHandler) {
+                this.messageHandler(event.data);
+            }
         });
 
         this.socket.addEventListener('error', (error) => {
@@ -22,13 +24,13 @@ export class WebSocketClient {
 
         this.socket.addEventListener('close', (event) => {
             console.log(`WebSocket connection closed:`, event);
-            // Optionally handle reconnect here
         });
     }
 
     sendMessage(message: any) {
         if (this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(JSON.stringify(message));
+            console.log(`Message is sent`, JSON.stringify(message));
         } else {
             console.warn('WebSocket is not open. Message not sent:', message);
         }

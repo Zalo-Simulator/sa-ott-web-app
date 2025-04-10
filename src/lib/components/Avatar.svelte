@@ -1,10 +1,12 @@
 <script lang="ts">
   import { getColorByText } from '$lib/utils/common'
+  import UserImage from '../../imgs/User Frame Black.png'
   export let user: any
 </script>
 
 {#if user.avatar_url}
-  <img src={user.avatar_url} class="rounded-circle" alt="" />
+  <img src={user.avatar_url} class="rounded-circle" alt="" 
+  on:error={(e: any) => (e.target.src = UserImage)}/>
 {:else}
   <div
     class="letter-rounded-circle"

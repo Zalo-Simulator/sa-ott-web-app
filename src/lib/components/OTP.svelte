@@ -105,7 +105,7 @@
 
       if (res) {
         logInUserSession(res.data, phoneNumber)
-        goto('/chat').then(() => {
+        goto('/profile').then(() => {
           window.location.reload()
         })
       }

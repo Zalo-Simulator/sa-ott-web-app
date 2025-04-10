@@ -8,7 +8,6 @@
   import { AUTH_API, USER_API, MEDIA_API } from '$lib/api/API-Endpoint'
   import { onMount } from 'svelte'
   import UserImage from '../../../imgs/User Frame Black.png'
-  import { getUserSession } from '$lib/service/login'
 
   let currentUser = getCurrentSessionUser()
   let selectedUser = {
@@ -87,40 +86,11 @@
     }
 
     const file = files[0]
-    const formData = new FormData()
-    formData.append('user_id', selectedUser.id)
-    formData.append('file', file)
+    const urlFile = await API.fileRequest(file)
 
-    try {
-      const session: any = getUserSession()
-      let token = ''
-      if (session) {
-        token = JSON.parse(session).access_token
-      }
-
-      const response = await fetch(MEDIA_API.upload, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        body: formData
-      })
-
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`)
-      }
-
-      const result = await response.json()
-
-      const downloadRes = await API.get(
-        MEDIA_API.download.replace('{s3_key}', result.data.key)
-      )
-      selectedUser.avatar_url = downloadRes.data.url
-      //update to session & database
-      updateUser()
-    } catch (error) {
-      console.error('Error uploading file:', error)
-    }
+    selectedUser.avatar_url = urlFile
+    //update to session & database
+    updateUser()
   }
 </script>
 
@@ -145,7 +115,8 @@
           <!-- Profile picture image-->
           <img
             class="img-account-profile rounded-circle mb-2"
-            src={selectedUser?.avatar_url || UserImage}
+            src={selectedUser?.avatar_url}
+            on:error={(e: any) => (e.target.src = UserImage)}
             alt=""
           />
           {#if currentUser.id == selectedUser.id}

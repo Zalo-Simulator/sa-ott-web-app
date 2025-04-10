@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getlistFriends } from '$lib/service/user'
   import { getCurrentSessionUser } from '$lib/service/login'
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import Avatar from '$lib/components/Avatar.svelte'
   import { WebSocketClient } from '$lib/service/web-socket-client'
   import { WEBSOCKET } from '$lib/api/API-Endpoint'
@@ -12,6 +12,8 @@
   let coversation: any = []
   let currentUser = getCurrentSessionUser()
   let searchText = ''
+  let wsClient: any
+  let message = ''
 
   onMount(async () => {
     friends = getlistFriends()
@@ -20,18 +22,21 @@
     selectedPerson = friends[0]
     filterFriends = friends
 
-    const wsClient = new WebSocketClient(
-      WEBSOCKET.connect.replace('{id}', currentUser.id)
+    wsClient = new WebSocketClient(
+      WEBSOCKET.connect.replace('{id}', currentUser.id),
+      onMessage
     )
 
-    // wsClient.sendMessage({
-    //   message: 'Hello',
-    //   group_id: 2,
-    //   message_type: 'text'
-    // })
+    //
+  })
 
+  onDestroy(async () => {
     wsClient.closeConnection()
   })
+
+  const onMessage = async (data: any) => {
+    console.log('Message from server:', data)
+  }
 
   const searchFriend = () => {
     let res: any = []
@@ -84,6 +89,65 @@
         time: '2:38 am'
       }
     ]
+  }
+
+  let file: any = null
+  let isDragOver = false
+
+  const handleDrop = (event: any) => {
+    event.preventDefault()
+    isDragOver = false
+
+    const droppedFile = event.dataTransfer.files[0]
+    if (droppedFile) {
+      file = droppedFile
+    }
+  }
+
+  const handleDragOver = (event: any) => {
+    event.preventDefault()
+    isDragOver = true
+  }
+
+  const handleDragLeave = () => {
+    isDragOver = false
+  }
+
+  const handleKeyDown = (event: any) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault() // Prevent newline
+      send()
+    }
+  }
+
+  const send = () => {
+    if (file) {
+      console.log('Sending file:', file.name)
+      // Upload or send file...
+      file = null
+    }
+    message = message.trim()
+    if (message) {
+      console.log('Sending message:', message.trim())
+      // wsClient.sendMessage({
+      //   message: message,
+      //   group_id: 1,
+      //   message_type: 'text'
+      // })
+
+      wsClient.sendMessage({
+        group_id: 1,
+        message_id: 2,
+        message_type: "reaction",
+        reaction: "👍"
+      })
+
+      message = ''
+    }
+  }
+
+  function removeFile() {
+    file = null
   }
 </script>
 
@@ -187,12 +251,37 @@
 
           <div class="flex-grow-0 py-3 px-4 border-top">
             <div class="input-group">
-              <input
+              <!-- <input
                 type="text"
                 class="form-control"
                 placeholder="Type your message"
-              />
-              <button class="btn btn-primary">Send</button>
+                bind:value={message}
+              /> -->
+              <div class="input-wrapper" class:dragover={isDragOver}>
+                <textarea
+                  class:dragover={isDragOver}
+                  bind:value={message}
+                  placeholder="Type your message or drop a file..."
+                  on:drop={handleDrop}
+                  on:dragover={handleDragOver}
+                  on:dragleave={handleDragLeave}
+                  on:keydown={handleKeyDown}
+                ></textarea>
+
+                {#if file}
+                  <div class="file-preview">
+                    📎 {file.name}
+                    <button class="remove-button" on:click={removeFile}
+                      >×</button
+                    >
+                  </div>
+                {/if}
+                <button
+                  class="btn btn-primary"
+                  on:click={send}
+                  disabled={!message && !file}>Send</button
+                >
+              </div>
             </div>
           </div>
         </div>
@@ -246,7 +335,7 @@
 
   #message-container {
     background-color: #ebecf0;
-    max-height: calc(100vh - 160px); /* Adjusting for a 60px header */
+    max-height: calc(100vh - 200px); /* Adjusting for a 60px header */
     overflow-y: auto;
   }
 
@@ -285,5 +374,47 @@
   #chat-container {
     overflow: hidden;
     max-height: calc(100vh - 10px);
+  }
+
+  .input-wrapper {
+    position: relative;
+    width: 100%;
+    display: inline-flex;
+  }
+
+  textarea {
+    width: calc(100% - 61px);
+    height: 100px;
+    padding: 1rem;
+    border: 2px dashed #ccc;
+    transition:
+      border-color 0.3s,
+      background-color 0.3s;
+    resize: none;
+  }
+
+  textarea.dragover {
+    border-color: #4caf50;
+    background-color: #f0fff0;
+  }
+
+  .file-preview {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f0f0f0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  .remove-button {
+    background: none;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    color: #d00;
   }
 </style>

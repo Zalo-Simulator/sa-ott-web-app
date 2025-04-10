@@ -128,7 +128,11 @@
           viewProfile(currentUser)
         }}
       >
-        <img src={currentUser?.avatar_url || UserImage} alt="profileImg" />
+        <img
+          src={currentUser?.avatar_url}
+          alt="profileImg"
+          on:error={(e: any) => (e.target.src = UserImage)}
+        />
         <div class="name_job">
           <div class="name">{currentUser?.full_name}</div>
         </div>
