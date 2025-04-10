@@ -6,6 +6,9 @@
   import { WebSocketClient } from '$lib/service/web-socket-client'
   import { WEBSOCKET } from '$lib/api/API-Endpoint'
   import API from '$lib/api/Interceptor'
+  import ReactionPicker from './ReactionPicker.svelte'
+  import { formatDateTime, isImage, isVideo } from '$lib/utils/common'
+  import { MESSAGE_TYPE } from '$lib/constants/constants'
 
   let friends: any = []
   let filterFriends: any = []
@@ -39,7 +42,16 @@
   const onMessage = async (data: any) => {
     console.log('Message from server:', data)
     const msg = JSON.parse(data)
-    conversation.push(msg)
+    if (msg.message_type == MESSAGE_TYPE.REACTION) {
+      let message = conversation.find(
+        (item: any) => item.message_id == msg.message_id
+      )
+      if (message) {
+        updateReaction(msg.reaction, message)
+      }
+    } else {
+      conversation.push(msg)
+    }
     conversation = conversation
   }
 
@@ -56,6 +68,20 @@
 
   $: selectedPerson && getChatConversation()
 
+  function sumCountsByName(items: any[]): any[] {
+    const map = new Map<string, number>()
+
+    for (const item of items) {
+      const current = map.get(item.reaction) || 0
+      map.set(item.reaction, current + item.count)
+    }
+
+    return Array.from(map.entries()).map(([reaction, count]) => ({
+      reaction,
+      count
+    }))
+  }
+
   const getChatConversation = async () => {
     let res = await API.get(
       WEBSOCKET.getConversation.replace('{group_id}', group_id)
@@ -64,6 +90,12 @@
       (a: any, b: any) =>
         new Date(a.time).getTime() - new Date(b.time).getTime()
     )
+
+    conversation.forEach((message: any) => {
+      message.reactions = sumCountsByName(message.reactions)
+    })
+
+    console.log('conversation', conversation)
   }
 
   let file: any = null
@@ -95,19 +127,59 @@
     }
   }
 
-  const send = () => {
+  const handleFileChange = (event: Event) => {
+    const input = event.target as HTMLInputElement
+    const selectedFile = input.files?.[0]
+    if (selectedFile) {
+      file = selectedFile
+    }
+  }
+
+  const triggerFileSelect = () => {
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement
+    fileInput.click()
+  }
+
+  const send = async () => {
+    //send file
     if (file) {
+      let message_type = MESSAGE_TYPE.FILE
+      if (isImage(file)) {
+        message_type = MESSAGE_TYPE.IMAGE
+      } else if (isVideo(file)) {
+        message_type = MESSAGE_TYPE.VIDEO
+      }
       console.log('Sending file:', file.name)
+
+      const urlFile = await API.fileRequest(file)
+
+      const msg = {
+        message: urlFile,
+        group_id: group_id,
+        message_type: message_type,
+        time: new Date().toString(),
+        person: {
+          id: currentUser.id,
+          full_name: currentUser.full_name,
+          avatar_url: currentUser.avatar_url
+        }
+      }
+
+      wsClient.sendMessage(msg)
+      conversation.push(msg)
+      conversation = conversation
+
       // Upload or send file...
       file = null
     }
+
+    //send message
     message = message.trim()
     if (message) {
-      console.log('Sending message:', message.trim())
       const msg = {
         message: message,
         group_id: group_id,
-        message_type: 'text',
+        message_type: MESSAGE_TYPE.TEXT,
         time: new Date().toString(),
         person: {
           id: currentUser.id,
@@ -117,18 +189,42 @@
       }
       wsClient.sendMessage(msg)
 
-      // wsClient.sendMessage({
-      //   group_id: group_id,
-      //   message_id: 2,
-      //   message_type: 'reaction',
-      //   reaction: '👍'
-      // })
-
       conversation.push(msg)
       conversation = conversation
 
       message = ''
     }
+  }
+
+  const updateReaction = (icon: string, message: any) => {
+    if (!message.reactions) {
+      message.reactions = []
+    }
+    let existing = message.reactions.find((item: any) => item.reaction === icon)
+    if (existing) {
+      existing.count++
+    } else {
+      message.reactions.push({
+        avatar_url: currentUser.avatar_url,
+        count: 1,
+        full_name: currentUser.full_name,
+        id: 1,
+        reaction: icon
+      })
+    }
+  }
+
+  const react = (icon: string, message: any) => {
+    wsClient.sendMessage({
+      group_id: group_id,
+      message_id: message.message_id,
+      message_type: MESSAGE_TYPE.REACTION,
+      reaction: icon
+    })
+
+    updateReaction(icon, message)
+
+    conversation = conversation
   }
 
   function removeFile() {
@@ -226,8 +322,19 @@
                   >
                     {item.message}
                     <div class="text-muted small text-nowrap mt-2">
-                      {item.time}
+                      {formatDateTime(item.time)}
                     </div>
+                    <div class="reaction">
+                      <div>
+                        {#each item.reactions as reaction}
+                          <span class="heart-icon">{reaction.reaction}</span>
+                          <span class="reaction-count">{reaction.count}</span>
+                        {/each}
+                      </div>
+                      <ReactionPicker handler={react} message={item}
+                      ></ReactionPicker>
+                    </div>
+                    <div class="reaction-popup"></div>
                   </div>
                 </div>
               {/each}
@@ -236,12 +343,6 @@
 
           <div class="flex-grow-0 py-3 px-4 border-top">
             <div class="input-group">
-              <!-- <input
-                type="text"
-                class="form-control"
-                placeholder="Type your message"
-                bind:value={message}
-              /> -->
               <div class="input-wrapper" class:dragover={isDragOver}>
                 <textarea
                   class:dragover={isDragOver}
@@ -253,6 +354,20 @@
                   on:keydown={handleKeyDown}
                 ></textarea>
 
+                <button
+                  class="file-button"
+                  on:click={triggerFileSelect}
+                  type="button"
+                >
+                  📁
+                </button>
+                <!-- Hidden file input -->
+                <input
+                  id="fileInput"
+                  type="file"
+                  class="hidden"
+                  on:change={handleFileChange}
+                />
                 {#if file}
                   <div class="file-preview">
                     📎 {file.name}
@@ -387,7 +502,7 @@
   .file-preview {
     position: absolute;
     bottom: 0.5rem;
-    left: 1rem;
+    left: 3rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -402,5 +517,30 @@
     font-weight: bold;
     cursor: pointer;
     color: #d00;
+  }
+
+  .reaction {
+    position: relative;
+    text-align: right;
+  }
+
+  .file-button {
+    position: absolute;
+    top: 60px;
+    left: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+  }
+
+  .file-button:hover {
+    opacity: 0.7;
+  }
+
+  .hidden {
+    display: none;
   }
 </style>

@@ -24,3 +24,11 @@ export const TOAST_THEME = {
         }
     }
 };
+
+export const MESSAGE_TYPE = {
+    TEXT: 'text', 
+    IMAGE: 'image', 
+    VIDEO: 'video', 
+    FILE: 'file',
+    REACTION: 'reaction'
+}
