@@ -65,7 +65,7 @@
   const updateUser = async () => {
     updateUserSession(selectedUser)
     let res = await API.put(
-      USER_API.updateUser.replaceAll('{id}', selectedUser.id),
+      USER_API.updateUser,
       {
         full_name: selectedUser.full_name,
         avatar_url: selectedUser.avatar_url || '',

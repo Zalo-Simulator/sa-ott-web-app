@@ -6,8 +6,15 @@
   import { WebSocketClient } from '$lib/service/web-socket-client'
   import { WEBSOCKET } from '$lib/api/API-Endpoint'
   import API from '$lib/api/Interceptor'
+  import { FRIEND_API } from '$lib/api/API-Endpoint'
   import ReactionPicker from './ReactionPicker.svelte'
-  import { formatDateTime, isImage, isVideo } from '$lib/utils/common'
+  import {
+    formatDateTime,
+    isImage,
+    isVideo,
+    getFileIcon,
+    getFileNameFromUrl
+  } from '$lib/utils/common'
   import { MESSAGE_TYPE } from '$lib/constants/constants'
 
   let friends: any = []
@@ -21,10 +28,12 @@
   let group_id = '1'
 
   onMount(async () => {
-    friends = getlistFriends()
-    friends[0].unread = 5
-    friends[1].unread = 2
-    selectedPerson = friends[0]
+    await getFriends()
+    // friends[0].unread = 5
+    // friends[1].unread = 2
+    if (friends.length > 0) {
+      selectedPerson = friends[0]
+    }
     filterFriends = friends
 
     wsClient = new WebSocketClient(
@@ -34,6 +43,11 @@
 
     //
   })
+
+  const getFriends = async () => {
+    friends = (await API.get(FRIEND_API.getFriends)).data.friends
+    friends = friends.filter((item: any) => item.id != currentUser.id)
+  }
 
   onDestroy(async () => {
     wsClient.closeConnection()
@@ -94,8 +108,6 @@
     conversation.forEach((message: any) => {
       message.reactions = sumCountsByName(message.reactions)
     })
-
-    console.log('conversation', conversation)
   }
 
   let file: any = null
@@ -227,8 +239,15 @@
     conversation = conversation
   }
 
-  function removeFile() {
+  const removeFile = () => {
     file = null
+  }
+
+  const downloadFile = (url: string) => {
+    const link = document.createElement('a')
+    link.href = url
+    //link.download = url;
+    link.click()
   }
 </script>
 
@@ -263,13 +282,19 @@
           </div>
 
           <!-- svelte-ignore a11y_no_static_element_interactions -->
+          {#if filterFriends.length <= 0}
+            <span class="no-friend">No friend found</span>
+          {/if}
           {#each filterFriends as friend}
             <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
             <div
               class="list-group-item list-group-item-action border-0"
               class:selected-chat={selectedPerson?.id == friend.id}
               on:click={() => {
-                selectedPerson = friend
+                if (selectedPerson.id != friend.id) {
+                  selectedPerson = friend
+                }
               }}
             >
               {#if friend.unread}
@@ -320,7 +345,38 @@
                     class:mr-3={item.person.id == currentUser.id}
                     class:ml-3={item.person.id != currentUser.id}
                   >
-                    {item.message}
+                    {#if item.message_type == MESSAGE_TYPE.TEXT}
+                      {item.message}
+                    {:else if item.message_type == MESSAGE_TYPE.IMAGE}
+                      <!-- svelte-ignore a11y_img_redundant_alt -->
+                      <img
+                        src={item.message}
+                        alt="chat image"
+                        class="chat-image"
+                      />
+                    {:else if item.message_type == MESSAGE_TYPE.VIDEO}
+                      <!-- svelte-ignore a11y_media_has_caption -->
+                      <video controls class="chat-video">
+                        <source src={item.message} />
+                        Your browser does not support the video tag.
+                      </video>
+                    {:else}
+                      <!-- svelte-ignore a11y_click_events_have_key_events -->
+                      <!-- svelte-ignore a11y_no_static_element_interactions -->
+                      <div
+                        class="attachment"
+                        on:click={() => downloadFile(item.message)}
+                      >
+                        <span style="color: {getFileIcon(item.message).color}"
+                          ><svelte:component
+                            this={getFileIcon(item.message).icon}
+                            size="20"
+                          /></span
+                        >
+
+                        {getFileNameFromUrl(item.message)}
+                      </div>
+                    {/if}
                     <div class="text-muted small text-nowrap mt-2">
                       {formatDateTime(item.time)}
                     </div>
@@ -542,5 +598,33 @@
 
   .hidden {
     display: none;
+  }
+
+  .chat-image {
+    max-width: 100%;
+    border-radius: 5px;
+    width: 200px;
+  }
+
+  .chat-video {
+    width: 100%;
+    border-radius: 5px;
+    width: 200px;
+  }
+  .attachment {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #007bff;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .attachment:hover {
+    text-decoration: underline;
+  }
+
+  .no-friend {
+    padding-left: 30px;
   }
 </style>

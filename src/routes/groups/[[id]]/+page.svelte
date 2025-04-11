@@ -35,7 +35,9 @@
 
   const getListFriends = () => {
     let friends = searchFriends(searchText)
-    const idsInMember = new Set(selectedGroup.members.map((item: any) => item.id))
+    const idsInMember = new Set(
+      selectedGroup.members.map((item: any) => item.id)
+    )
     users = friends.filter((item: any) => !idsInMember.has(item.id))
   }
 
@@ -46,7 +48,9 @@
   }
 
   const removeUser = (user: any) => {
-    selectedGroup.members = selectedGroup.members.filter((item: any) => item.id !== user.id)
+    selectedGroup.members = selectedGroup.members.filter(
+      (item: any) => item.id !== user.id
+    )
     getListFriends()
   }
 
@@ -72,7 +76,8 @@
     }
   }
 
-  $: validationGroup = !!selectedGroup.name && selectedGroup.members.length >= MIN_NUM_MEMBERS
+  $: validationGroup =
+    !!selectedGroup.name && selectedGroup.members.length >= MIN_NUM_MEMBERS
 </script>
 
 <svelte:head>
@@ -152,7 +157,11 @@
         <div class="row" style="margin-left: 10px;">Suggestions:</div>
         <div class="row">
           <div class="col-sm-12">
-            <ListUsers buttonText="Add" {users} handlerItem={addUser}
+            <ListUsers
+              {users}
+              buttons={[
+                { label: 'Add', style: 'btn-primary', handler: addUser }
+              ]}
             ></ListUsers>
           </div>
         </div>
@@ -176,7 +185,9 @@
           </div>
         </div>
         <div class="row" style="margin-left: 10px;">
-          <div class:is-invalid={selectedGroup.members.length < MIN_NUM_MEMBERS}>
+          <div
+            class:is-invalid={selectedGroup.members.length < MIN_NUM_MEMBERS}
+          >
             Selected Members:
           </div>
           <div class="invalid-feedback">
@@ -186,22 +197,20 @@
         <div class="row">
           <div class="col-sm-12">
             <ListUsers
-              buttonText="Remove"
               users={selectedGroup.members}
-              handlerItem={removeUser}
-              buttonStyle="btn-warning"
               excludeActionItems={[currentUser.id]}
+              buttons={[
+                { label: 'Remove', style: 'btn-warning', handler: removeUser }
+              ]}
             ></ListUsers>
           </div>
         </div>
         <div class="row">
           <div class="col-sm-12">
             <div class="d-flex justify-content-end col-sm-12">
-              <button class="btn btn-primary" disabled={!validationGroup}
-                >
+              <button class="btn btn-primary" disabled={!validationGroup}>
                 {selectedGroup.id ? 'Update Group' : 'Create Group'}
-                </button
-              >
+              </button>
             </div>
           </div>
         </div>

@@ -9,4 +9,8 @@ export const MESSAGE = {
     
     SUCCESS_CHANGE_PASSWORD : 'Your password has been changed successfully!',
     SUCCESS_CHANGE_ACCOUNT : 'Your account has been changed successfully!',
+
+    SUCCESS_MAKE_FRIEND : 'Your request has been sent successfully!',
+    SUCCESS_DECLINE_FRIEND : 'A friend has been removed!',
+    SUCCESS_ACCEPT_FRIEND : 'You has been made new friend!',
 }

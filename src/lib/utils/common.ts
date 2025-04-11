@@ -1,3 +1,6 @@
+
+import { FileText, FileSpreadsheet, File } from 'lucide-svelte'
+
 export const getColorByText = (text: string): string => {
     // Create a hash from the text
     let hash = 0;
@@ -58,5 +61,26 @@ export const isVideo = (input: string | File): boolean => {
         return videoExtensions.some(ext => lowerCaseName.endsWith(ext));
     } else {
         return input.type.startsWith('video/');
+    }
+}
+
+export const getFileIcon = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+
+    if (ext === 'pdf') return { icon: FileText, color: 'red' };
+    if (ext === 'doc' || ext === 'docx') return { icon: FileText, color: 'blue' };
+    if (ext === 'xls' || ext === 'xlsx' || ext === 'csv') return { icon: FileSpreadsheet, color: 'green' };
+
+    return { icon: File, color: 'gray' };
+}
+
+export const getFileNameFromUrl = (url: string): string => {
+    try {
+        const parsedUrl = new URL(url);
+        const pathname = parsedUrl.pathname;
+        return decodeURIComponent(pathname.substring(pathname.lastIndexOf('/') + 1));
+    } catch (error) {
+        console.error('Invalid URL:', error);
+        return '';
     }
 }

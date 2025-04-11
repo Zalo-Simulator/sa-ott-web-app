@@ -1,22 +1,87 @@
 <script lang="ts">
   import Tab from '$lib/components/Tab.svelte'
   import ListUsers from '$lib/components/ListUsers.svelte'
-  import { getlistFriends, searchUsers } from '$lib/service/user'
   import { onMount } from 'svelte'
+  import API from '$lib/api/Interceptor'
+  import { FRIEND_API, USER_API } from '$lib/api/API-Endpoint'
+  import { getCurrentSessionUser } from '$lib/service/login'
+  import { MESSAGE } from '$lib/constants/message'
+  import ConfirmationDialog from '$lib/components/ConfirmationDialog.svelte'
 
   let tabIndex = 0
   let friends: any = []
   let users: any = []
+  let pendings: any = []
   let searchText: string = ''
+  let currentUser = getCurrentSessionUser()
+  let listPendingIds: any = []
+  let showDialog = false
 
-  onMount(() => {
-    friends = getlistFriends()
-    users = searchUsers(searchText)
+  onMount(async () => {
+    await getPendingFriends()
   })
 
-  const searchFriend = () => {
-    users = searchUsers(searchText)
+  const searchFriend = async () => {
+    users = (await API.get(USER_API.searchUsers.replace('{text}', searchText)))
+      .data
+    console.log('friends', friends)
+    users = users.filter(
+      (item: any) =>
+        item.id != currentUser.id &&
+        !friends.some((friend: any) => friend.id == item.id) &&
+        !pendings.some((friend: any) => friend.id == item.id)
+    )
   }
+
+  const getFriends = async () => {
+    friends = (await API.get(FRIEND_API.getFriends)).data.friends
+    friends = friends.filter((item: any) => item.id != currentUser.id)
+  }
+
+  const getPendingFriends = async () => {
+    pendings = (await API.get(FRIEND_API.getPendingFriends)).data.friends
+  }
+
+  const makeFriend = async (user: any) => {
+    await API.post(
+      FRIEND_API.makeFriend.replace('{friend_id}', user.id),
+      '',
+      MESSAGE.SUCCESS_MAKE_FRIEND
+    )
+    listPendingIds.push(user.id)
+    users = users
+    listPendingIds = listPendingIds
+  }
+
+  const acceptFriend = async (user: any) => {
+    await API.put(
+      FRIEND_API.acceptFriend.replace('{friend_id}', user.id),
+      '',
+      MESSAGE.SUCCESS_ACCEPT_FRIEND
+    )
+    getPendingFriends()
+  }
+
+  let declinedFriend: any = null
+  const declineFriend = async () => {
+    let res = await API.delete(
+      FRIEND_API.removeFriend.replace('{friend_id}', declinedFriend.id),
+      '',
+      MESSAGE.SUCCESS_DECLINE_FRIEND
+    )
+    getPendingFriends()
+    getFriends()
+    return res
+  }
+
+  const showConfirmationDecline = (user: any) => {
+    declinedFriend = user
+    showDialog = true
+  }
+
+  $: tabIndex == 0 && getFriends()
+  $: tabIndex == 1 && searchFriend()
+  $: tabIndex == 2 && getPendingFriends()
 </script>
 
 <svelte:head>
@@ -33,13 +98,28 @@
 <div class="content">
   <Tab
     bind:tabIndex
-    tabs={['Total Friends: ' + users.length, 'Make a New Friend']}
+    tabs={[
+      'Total Friends: ' + friends?.length,
+      'Make a New Friend',
+      'Pending Requests'
+    ]}
   ></Tab>
   <div class="main-container">
     {#if tabIndex == 0}
       <div class="row">
         <div class="col-sm-12 col-md-6 col-lg-6">
-          <ListUsers buttonText="Unfriend" users={friends} buttonStyle="btn-danger" ableViewProfie={true}></ListUsers>
+          <ListUsers
+            buttons={[
+              {
+                label: 'Unfriend',
+                style: 'btn-danger',
+                handler: showConfirmationDecline
+              }
+            ]}
+            users={friends}
+            ableViewProfie={true}
+            emptyText="You don't have friend, please make new friends to have good contact with them"
+          ></ListUsers>
         </div>
         <!-- end col -->
       </div>
@@ -66,15 +146,51 @@
       <div class="row">
         <div class="col-sm-12 col-md-6 col-lg-6">
           <!-- Personal-Information -->
-          <ListUsers buttonText="Make friend" {users} ableViewProfie={true}></ListUsers>
+          <ListUsers
+            {users}
+            ableViewProfie={true}
+            buttons={[
+              {
+                label: 'Make friend',
+                style: 'btn-primary',
+                handler: makeFriend
+              }
+            ]}
+            emptyText="No user found, please enter other names"
+            excludeActionItems={listPendingIds}
+          ></ListUsers>
         </div>
         <!-- end col -->
+      </div>
+    {/if}
+    {#if tabIndex == 2}
+      <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg-6">
+          <ListUsers
+            users={pendings}
+            ableViewProfie={true}
+            buttons={[
+              { label: 'Accept', style: 'btn-primary', handler: acceptFriend },
+              {
+                label: 'Decline',
+                style: 'btn-danger',
+                handler: showConfirmationDecline
+              }
+            ]}
+            emptyText="You don't have pending friend request"
+          ></ListUsers>
+        </div>
       </div>
     {/if}
     <!-- end row -->
   </div>
   <!-- container -->
 </div>
+<ConfirmationDialog
+  bind:show={showDialog}
+  message="Would you like to remove this friend?"
+  onConfirm={declineFriend}
+/>
 
 <style>
   .content {

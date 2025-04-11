@@ -138,7 +138,7 @@ const post = async (
 // function to execute the http put request
 const put = async (
     url: string,
-    request: any,
+    request?: any,
     message?: string,
     toastTheme?: any,
     hideLoader?: boolean

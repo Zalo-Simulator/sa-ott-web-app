@@ -14,15 +14,23 @@ export const AUTH_API = {
 export const USER_API = {
     getUser: `${URL_PREFIX}/users/{id}`,
     getCurrentUser: `${URL_PREFIX}/users/me`,
-    updateUser: `${URL_PREFIX}/users/{id}`,
+    updateUser: `${URL_PREFIX}/users/me`,
+    searchUsers: `${URL_PREFIX}/users/?text={text}`,    
+};
 
-    getContacts: `${URL_PREFIX}/users/{id}/contacts`,
-    updateContact: `${URL_PREFIX}/users/{id}/contacts/{user_id}`,
-    getGroups: `${URL_PREFIX}/users/{id}/groups`,
-    getGroup: `${URL_PREFIX}/users/groups/{id}`,
-    updateGroup: `${URL_PREFIX}/users/groups/{id}`,
-    addGroupMember: `${URL_PREFIX}/users/groups/{id}/members`,
-    removeGroupMember: `${URL_PREFIX}/users/groups/{id}/members/{user_id}`,
+export const FRIEND_API = {
+    getFriends: `${URL_PREFIX}/friends`,
+    getPendingFriends: `${URL_PREFIX}/friends/pending`,
+    makeFriend:  `${URL_PREFIX}/friends/{friend_id}`,
+    acceptFriend:  `${URL_PREFIX}/friends/{friend_id}`,
+    removeFriend:  `${URL_PREFIX}/friends/{friend_id}`,    
+};
+
+export const GROUP_API = {
+    getGroups: `${URL_PREFIX}/groups`,
+    createGroup: `${URL_PREFIX}/groups`,
+    getGroup: `${URL_PREFIX}/groups/{id}`,
+    updateGroup: `${URL_PREFIX}/groups/{id}`,
     
 };
 

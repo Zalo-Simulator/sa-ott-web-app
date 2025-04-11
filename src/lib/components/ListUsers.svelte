@@ -2,18 +2,12 @@
   import { goto } from '$app/navigation'
   import Avatar from '$lib/components/Avatar.svelte'
 
-  export let buttonText = ''
   export let users: any = []
-  export let handlerItem: any = null
-  export let buttonStyle = 'btn-primary'
-  export let excludeActionItems: any = []
   export let ableViewProfie = false
-
-  const handlerUserAction = (user: any) => {
-    if (handlerItem) {
-      handlerItem(user)
-    }
-  }
+  export let emptyText = '(No data)'
+  //{label, handler, style}
+  export let buttons: any = []
+  export let excludeActionItems: any = []
 
   const viewProfile = (user: any) => {
     if (ableViewProfie) {
@@ -54,21 +48,25 @@
             {user.is_active ? 'Online' : 'Offline'}
           </p>
           <p class="inbox-item-date">
-            {#if buttonText && !excludeActionItems.some((item: number) => item == user.id)}
-              <button
-                type="button"
-                class="btn btn-icon btn-sm waves-effect waves-light {buttonStyle}"
-                on:click={() => {
-                  handlerUserAction(user)
-                }}>{buttonText}</button
-              >
+            {#if !excludeActionItems.some((item: number) => item == user.id)}
+              {#each buttons as button}
+                <button
+                  type="button"
+                  class="btn btn-icon btn-sm waves-effect waves-light {button.style}"
+                  on:click={() => {
+                    if (button.handler) {
+                      button.handler(user)
+                    }
+                  }}>{button.label}</button
+                >
+              {/each}
             {/if}
           </p>
         </div>
       </div>
     {/each}
     {#if users.length <= 0}
-      (No data)
+      {emptyText}
     {/if}
   </div>
 </div>
@@ -115,11 +113,14 @@
     right: 7px;
     top: 12px;
   }
+  .inbox-item-date button {
+    margin-right: 10px;
+  }
 
   .cursor-pointer {
     cursor: pointer;
   }
-  
+
   .cursor-pointer:hover {
     text-decoration: underline;
   }
