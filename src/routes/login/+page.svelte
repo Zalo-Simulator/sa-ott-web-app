@@ -7,15 +7,18 @@
   import API from '$lib/api/Interceptor'
   import { AUTH_API } from '$lib/api/API-Endpoint'
   import { MESSAGE } from '$lib/constants/message'
+  import { onMount } from 'svelte'
 
   pageHomeClass.set('disable-menu')
   let isValidLogin = true
 
-  if (isUserLoggedIn()) {
-    goto('/chat').then(() => {
-      window.location.reload()
-    })
-  }
+  onMount(async () => {
+    if (await isUserLoggedIn()) {
+      goto('/chat').then(() => {
+        window.location.reload()
+      })
+    }
+  })
 
   const login = async () => {
     const res = await API.post(AUTH_API.login, {

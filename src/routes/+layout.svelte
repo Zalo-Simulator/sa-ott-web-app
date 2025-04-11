@@ -15,20 +15,8 @@
   import UserImage from '../imgs/User Frame.png'
   import API from '$lib/api/Interceptor'
   import { AUTH_API } from '$lib/api/API-Endpoint'
-
   let showDialog = false
-  let currentUser = getCurrentSessionUser()
-
-  if (
-    !isUserLoggedIn() &&
-    $page.url.pathname.toLocaleLowerCase() != '/register' &&
-    $page.url.pathname.toLocaleLowerCase() != '/login' &&
-    $page.url.pathname.toLocaleLowerCase() != '/reset-password'
-  ) {
-    goto('/login').then(() => {
-      window.location.reload()
-    })
-  }
+  let currentUser: any = {}
 
   const showConfirmationlogOut = () => {
     showDialog = true
@@ -48,7 +36,18 @@
     })
   }
 
-  onMount(() => {
+  onMount(async () => {
+    if (
+      !(await isUserLoggedIn()) &&
+      $page.url.pathname.toLocaleLowerCase() != '/register' &&
+      $page.url.pathname.toLocaleLowerCase() != '/login' &&
+      $page.url.pathname.toLocaleLowerCase() != '/reset-password'
+    ) {
+      goto('/login').then(() => {
+        window.location.reload()
+      })
+    }
+    currentUser = await getCurrentSessionUser()
     let sidebar = document.querySelector('.sidebar')
     let closeBtn = document.querySelector('#btn')
 

@@ -18,7 +18,7 @@
 
   let searchText: string = ''
   const MIN_NUM_MEMBERS = 3
-  let currentUser = getCurrentSessionUser()
+  let currentUser: any = {}
   let groupId = $page.params.id
   let selectedGroup = {
     id: 0,
@@ -27,10 +27,14 @@
   }
 
   onMount(async () => {
+    currentUser = await getCurrentSessionUser()
     if (groupId) {
       selectedGroup = (
         await API.get(GROUP_API.getGroup.replace('{id}', groupId))
       ).data
+      selectedGroup.members.forEach((member: any) => {
+        member.full_name = member.name
+      })
       if (selectedGroup) {
         tabIndex = 1
       }
@@ -39,6 +43,7 @@
 
   const getlistGroups = async () => {
     groups = (await API.get(GROUP_API.getGroups)).data.groups
+    groups = groups.filter((item: any) => item.type == GROUP_TYPE.GROUP)
     groups.forEach((group: any) => {
       group.members.forEach((member: any) => {
         member.full_name = member.name

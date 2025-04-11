@@ -6,31 +6,33 @@
   import { pageHomeClass } from '$lib/service/store'
   import API from '$lib/api/Interceptor'
   import { AUTH_API } from '$lib/api/API-Endpoint'
+  import { onMount } from 'svelte'
 
   pageHomeClass.set('disable-menu')
 
   let phoneNumber = ''
   let password = ''
 
-  //TODO: unframe
-  if (isUserLoggedIn()) {
-    goto('/chat').then(() => {
-      window.location.reload()
-    })
-  }
+  onMount(async () => {
+    if (await isUserLoggedIn()) {
+      goto('/chat').then(() => {
+        window.location.reload()
+      })
+    }
+  })
 
   const register = async () => {
     await API.post(AUTH_API.register, {
       full_name: phoneNumber,
       phone: phoneNumber,
       password: password,
-      avatar_url: ""
+      avatar_url: ''
     })
     const res = await API.post(AUTH_API.login, {
       phone: phoneNumber,
       password: password
     })
-    return res;
+    return res
   }
 </script>
 
@@ -54,7 +56,12 @@
           <h1 class="h2">Register</h1>
           <p class="lead">Register now for secure and instant messaging!</p>
         </div>
-        <OTP showCheckbox={true} bind:phoneNumber bind:password finishHandler={register}></OTP>
+        <OTP
+          showCheckbox={true}
+          bind:phoneNumber
+          bind:password
+          finishHandler={register}
+        ></OTP>
       </div>
     </div>
   </div>

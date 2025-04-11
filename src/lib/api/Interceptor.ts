@@ -19,10 +19,10 @@ const apiRequest = async (
     }
     try {
 
-        const session: any = getUserSession();
+        const session: any = await getUserSession();
         let token = ''
         if (session) {
-            token = JSON.parse(session).access_token
+            token = session.access_token
         }
 
         let options = {
@@ -63,8 +63,8 @@ const fileRequest = async (
     loader.showLoader();
     try {
 
-        const currentUser = getCurrentSessionUser()
-        const session: any = getUserSession();
+        const currentUser = await getCurrentSessionUser()
+        const session: any = await getUserSession();
 
         const formData = new FormData()
         formData.append('user_id', currentUser.id)
@@ -72,7 +72,7 @@ const fileRequest = async (
 
         let token = ''
         if (session) {
-            token = JSON.parse(session).access_token
+            token = session.access_token
         }
 
         const response = await fetch(MEDIA_API.upload, {

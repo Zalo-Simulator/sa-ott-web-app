@@ -14,14 +14,14 @@
     getFileIcon,
     getFileNameFromUrl
   } from '$lib/utils/common'
-  import { MESSAGE_TYPE } from '$lib/constants/constants'
+  import { MESSAGE_TYPE, stickers } from '$lib/constants/constants'
   import InView from '$lib/components/InView.svelte'
 
   let friends: any = []
   let filterFriends: any = []
   let selectedPerson: any = null
   let conversation: any = []
-  let currentUser = getCurrentSessionUser()
+  let currentUser: any = {}
   let searchText = ''
   let wsClient: any
   let message = ''
@@ -32,6 +32,7 @@
   let isStillLoadMore = false
 
   onMount(async () => {
+    currentUser = await getCurrentSessionUser()
     await getFriends()
     if (friends.length > 0) {
       selectedPerson = friends[0]
@@ -297,6 +298,31 @@
       container.scrollTop = container.scrollHeight
     }
   }
+
+  let showStickers = false
+
+  const selectSticker = (sticker: { type: string; value: string }) => {
+    //sendMessage(sticker.value)
+    if (sticker.type == 'emoji') {
+      message += sticker.value
+    } else {
+      const msg = {
+        message: sticker.value,
+        group_id: group_id,
+        message_type: MESSAGE_TYPE.STICKER,
+        time: new Date().toString(),
+        person: {
+          id: currentUser.id,
+          full_name: currentUser.full_name,
+          avatar_url: currentUser.avatar_url
+        }
+      }
+
+      showStickers = false
+      wsClient.sendMessage(msg)
+      conversation.push(msg)
+    }
+  }
 </script>
 
 <svelte:head>
@@ -408,6 +434,13 @@
                         alt="chat image"
                         class="chat-image"
                       />
+                    {:else if item.message_type == MESSAGE_TYPE.STICKER}
+                      <!-- svelte-ignore a11y_img_redundant_alt -->
+                      <img
+                        src={item.message}
+                        alt="chat image"
+                        class="chat-image"
+                      />
                     {:else if item.message_type == MESSAGE_TYPE.VIDEO}
                       <!-- svelte-ignore a11y_media_has_caption -->
                       <video controls class="chat-video">
@@ -471,6 +504,32 @@
                 >
                   📁
                 </button>
+                <!-- svelte-ignore a11y_click_events_have_key_events -->
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <div
+                  class="icon-button"
+                  on:click={() => (showStickers = !showStickers)}
+                >
+                  😊
+                </div>
+                {#if showStickers}
+                  <div class="sticker-popup">
+                    {#each stickers as sticker}
+                      <!-- svelte-ignore a11y_click_events_have_key_events -->
+                      <!-- svelte-ignore a11y_no_static_element_interactions -->
+                      <div
+                        class="sticker"
+                        on:click={() => selectSticker(sticker)}
+                      >
+                        {#if sticker.type === 'emoji'}
+                          {sticker.value}
+                        {:else if sticker.type === 'image'}
+                          <img src={sticker.value} alt="sticker" />
+                        {/if}
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
                 <!-- Hidden file input -->
                 <input
                   id="fileInput"
@@ -612,7 +671,7 @@
   .file-preview {
     position: absolute;
     bottom: 0.5rem;
-    left: 3rem;
+    left: 90px;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -637,6 +696,18 @@
   .file-button {
     position: absolute;
     top: 60px;
+    left: 50px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+  }
+
+  .icon-button {
+    position: absolute;
+    top: 60px;
     left: 10px;
     background: none;
     border: none;
@@ -647,6 +718,10 @@
   }
 
   .file-button:hover {
+    opacity: 0.7;
+  }
+
+  .icon-button:hover {
     opacity: 0.7;
   }
 
@@ -680,5 +755,41 @@
 
   .no-friend {
     padding-left: 30px;
+  }
+
+  .sticker-popup {
+    position: absolute;
+    bottom: 100%;
+    left: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    min-width: 50%;
+    max-width: 75%;
+    overflow: auto;
+    z-index: 10;
+  }
+
+  .sticker {
+    cursor: pointer;
+    font-size: 24px;
+    margin: 4px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .sticker img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 </style>

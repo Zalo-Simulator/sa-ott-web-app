@@ -1,12 +1,16 @@
-export const isUserLoggedIn = () => {
-    return !!sessionStorage.getItem("session-login");
+import { IndexedDb } from "$lib/service/IndexedDb";
+const dbInstance = IndexedDb.getInstance("common-storage", "session");
+
+export const isUserLoggedIn = async () => {
+    let res = await dbInstance.getValue("session-login")
+    return !!res;
 }
 
-export const logInUserSession = (data: any, phone: string) => {
-    sessionStorage.setItem("session-login", JSON.stringify({
+export const logInUserSession = async (data: any, phone: string) => {
+    dbInstance.saveValue("session-login", {
         access_token: data.access_token,
         token_type: data.token_type
-    }));
+    });
     updateUserSession({
         id: data.id,
         full_name: data.full_name,
@@ -15,23 +19,21 @@ export const logInUserSession = (data: any, phone: string) => {
     })
 }
 
-export const logOutUserSession = () => {
-    sessionStorage.setItem("session-login", "");
-    sessionStorage.setItem("current-user", "");
+export const logOutUserSession = async () => {
+    dbInstance.saveValue("session-login", null);
+    dbInstance.saveValue("current-user", null);
 }
 
-export const getUserSession = () => {
-    return sessionStorage.getItem("session-login");
+export const getUserSession = async () => {
+    let res = await dbInstance.getValue("session-login")
+    return res;
 }
 
-export const updateUserSession = (currentUser: any) => {
-    sessionStorage.setItem("current-user", JSON.stringify(currentUser));
+export const updateUserSession = async (currentUser: any) => {
+    dbInstance.saveValue("current-user", currentUser);
 }
 
-export const getCurrentSessionUser = () => {
-    let userObject = sessionStorage.getItem("current-user")
-    if (userObject) {
-        return JSON.parse(userObject);
-    }
-    return null;
+export const getCurrentSessionUser = async () => {
+    let userObject = await dbInstance.getValue("current-user")
+    return userObject;
 }

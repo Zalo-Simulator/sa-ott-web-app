@@ -6,23 +6,25 @@
   import { pageHomeClass } from '$lib/service/store'
   import API from '$lib/api/Interceptor'
   import { AUTH_API } from '$lib/api/API-Endpoint'
+  import { onMount } from 'svelte'
 
   pageHomeClass.set('disable-menu')
 
   let phoneNumber = ''
   let password = ''
 
-  //TODO: unframe
-  if (isUserLoggedIn()) {
-    goto('/chat').then(() => {
-      window.location.reload()
-    })
-  }
+  onMount(async () => {
+    if (await isUserLoggedIn()) {
+      goto('/chat').then(() => {
+        window.location.reload()
+      })
+    }
+  })
 
   const resetPassword = async () => {
     await API.post(AUTH_API.resetPassword, {
       phone: phoneNumber,
-      password: password,
+      password: password
     })
     const res = await API.post(AUTH_API.login, {
       phone: phoneNumber,

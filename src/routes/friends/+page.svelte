@@ -13,11 +13,12 @@
   let users: any = []
   let pendings: any = []
   let searchText: string = ''
-  let currentUser = getCurrentSessionUser()
+  let currentUser: any = {}
   let listPendingIds: any = []
   let showDialog = false
 
   onMount(async () => {
+    currentUser = await getCurrentSessionUser()
     await getPendingFriends()
   })
 

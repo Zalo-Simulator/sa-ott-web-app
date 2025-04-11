@@ -1,10 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { isUserLoggedIn } from '$lib/service/login'
+  import { onMount } from 'svelte'
 
-  if (!isUserLoggedIn()) {
-    goto('/login')
-  } else {
-    goto('/chat')
-  }
+  onMount(async () => {
+    if (!(await isUserLoggedIn())) {
+      goto('/login')
+    } else {
+      goto('/chat')
+    }
+  })
 </script>

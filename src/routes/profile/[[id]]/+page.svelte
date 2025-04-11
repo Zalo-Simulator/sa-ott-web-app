@@ -1,6 +1,5 @@
 <script lang="ts">
   import { getCurrentSessionUser, updateUserSession } from '$lib/service/login'
-  import { getUserbyId } from '$lib/service/user'
   import { page } from '$app/stores'
   import { isValidPassword } from '$lib/utils/validation'
   import { MESSAGE } from '$lib/constants/message'
@@ -9,7 +8,7 @@
   import { onMount } from 'svelte'
   import UserImage from '../../../imgs/User Frame Black.png'
 
-  let currentUser = getCurrentSessionUser()
+  let currentUser: any = {}
   let selectedUser = {
     id: '0',
     full_name: '',
@@ -23,12 +22,13 @@
   let userId = $page.params.id
 
   onMount(async () => {
+    currentUser = await getCurrentSessionUser()
     getUser()
   })
 
   const getUser = async () => {
     if (userId && userId != currentUser.id) {
-      let user = await getUserbyId(userId)
+      let user = await API.get(USER_API.getUser.replaceAll('{id}', userId))
       if (user.data) {
         selectedUser = user.data
       } else {
@@ -115,7 +115,7 @@
           <!-- Profile picture image-->
           <img
             class="img-account-profile rounded-circle mb-2"
-            src={selectedUser?.avatar_url || UserImage }
+            src={selectedUser?.avatar_url || UserImage}
             on:error={(e: any) => (e.target.src = UserImage)}
             alt=""
           />
