@@ -31,6 +31,7 @@ export const GROUP_API = {
     createGroup: `${URL_PREFIX}/groups`,
     getGroup: `${URL_PREFIX}/groups/{id}`,
     updateGroup: `${URL_PREFIX}/groups/{id}`,
+    getPrivateGroup: `${URL_PREFIX}/groups/private/{friend_id}`
     
 };
 
@@ -41,5 +42,5 @@ export const MEDIA_API = {
 
 export const WEBSOCKET = {
     connect: `${WEBSOCKET_PREFIX}/{id}`,
-    getConversation: `${URL_PREFIX}/chats/chat/{group_id}?limit=25`,
+    getConversation: `${URL_PREFIX}/chats/chat/{group_id}?limit={num_message}`,
 }

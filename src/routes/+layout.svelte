@@ -129,7 +129,7 @@
         }}
       >
         <img
-          src={currentUser?.avatar_url}
+          src={currentUser?.avatar_url || UserImage}
           alt="profileImg"
           on:error={(e: any) => (e.target.src = UserImage)}
         />

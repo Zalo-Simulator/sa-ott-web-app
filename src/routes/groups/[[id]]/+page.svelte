@@ -1,17 +1,21 @@
 <script lang="ts">
   import Tab from '$lib/components/Tab.svelte'
   import ListUsers from '$lib/components/ListUsers.svelte'
-  import { getlistGroups, searchFriends } from '$lib/service/user'
   import { getColorByText } from '$lib/utils/common'
   import { onMount } from 'svelte'
   import { MESSAGE } from '$lib/constants/message'
   import { getCurrentSessionUser } from '$lib/service/login'
   import { page } from '$app/stores'
   import { goto } from '$app/navigation'
+  import API from '$lib/api/Interceptor'
+  import { FRIEND_API, GROUP_API } from '$lib/api/API-Endpoint'
+  import { GROUP_TYPE } from '$lib/constants/constants'
 
   let tabIndex = 0
   let groups: any = []
   let users: any = []
+  let friends: any = []
+
   let searchText: string = ''
   const MIN_NUM_MEMBERS = 3
   let currentUser = getCurrentSessionUser()
@@ -22,36 +26,83 @@
     members: [currentUser]
   }
 
-  onMount(() => {
-    groups = getlistGroups()
-    getListFriends()
+  onMount(async () => {
     if (groupId) {
-      selectedGroup = groups.find((item: any) => item.id == groupId)
+      selectedGroup = (
+        await API.get(GROUP_API.getGroup.replace('{id}', groupId))
+      ).data
       if (selectedGroup) {
         tabIndex = 1
       }
     }
   })
 
-  const getListFriends = () => {
-    let friends = searchFriends(searchText)
+  const getlistGroups = async () => {
+    groups = (await API.get(GROUP_API.getGroups)).data.groups
+    groups.forEach((group: any) => {
+      group.members.forEach((member: any) => {
+        member.full_name = member.name
+      })
+    })
+  }
+
+  const getListFriends = async () => {
+    friends = (await API.get(FRIEND_API.getFriends)).data.friends
+    friends = friends.filter((item: any) => item.id != currentUser.id)
+    filterListFriends()
+  }
+
+  const filterListFriends = async () => {
     const idsInMember = new Set(
       selectedGroup.members.map((item: any) => item.id)
     )
     users = friends.filter((item: any) => !idsInMember.has(item.id))
+    let res = []
+    let text = searchText.toLowerCase()
+    for (let i = 0; i < users.length; i++) {
+      if (users[i].full_name.toLowerCase().indexOf(text) >= 0) {
+        res.push(users[i])
+      }
+    }
+    users = res
   }
+
+  $: tabIndex == 0 && getlistGroups()
+  $: tabIndex == 1 && getListFriends()
 
   const addUser = (user: any) => {
     selectedGroup.members.push(user)
     selectedGroup.members = selectedGroup.members
-    getListFriends()
+    filterListFriends()
   }
 
   const removeUser = (user: any) => {
     selectedGroup.members = selectedGroup.members.filter(
       (item: any) => item.id !== user.id
     )
-    getListFriends()
+    filterListFriends()
+  }
+
+  const updateGroup = async () => {
+    //Update group
+    if (selectedGroup.id) {
+      await API.put(
+        GROUP_API.updateGroup.replace('{id}', selectedGroup.id.toString()),
+        {
+          name: selectedGroup.name,
+          avatar_url: '1'
+          // member_ids: selectedGroup.members.map((item: any) => item.id),
+        }
+      )
+    }
+    //Create new group
+    else {
+      await API.post(GROUP_API.createGroup, {
+        name: selectedGroup.name,
+        member_ids: selectedGroup.members.map((item: any) => item.id),
+        type: GROUP_TYPE.GROUP
+      })
+    }
   }
 
   const viewGroup = (group: any) => {
@@ -59,8 +110,6 @@
     selectedGroup = group
     tabIndex = 1
   }
-
-  const mapGroup = (group: any) => {}
 
   $: groups && calcluateBackground()
 
@@ -98,6 +147,11 @@
   ></Tab>
   {#if tabIndex == 0}
     <div class="row groups">
+      {#if groups.length <= 0}
+        <div class="no-group">
+          You don't have any group, let create groups with your friends
+        </div>
+      {/if}
       {#each groups as group}
         <div class="col-xl-2 col-lg-3 col-sm-4 col-6">
           <div class="groups__item">
@@ -150,7 +204,7 @@
               aria-label="Sizing example input"
               aria-describedby="inputGroup-sizing-default"
               bind:value={searchText}
-              on:change={getListFriends}
+              on:change={filterListFriends}
             />
           </div>
         </div>
@@ -162,6 +216,7 @@
               buttons={[
                 { label: 'Add', style: 'btn-primary', handler: addUser }
               ]}
+              emptyText="No friend found"
             ></ListUsers>
           </div>
         </div>
@@ -208,7 +263,11 @@
         <div class="row">
           <div class="col-sm-12">
             <div class="d-flex justify-content-end col-sm-12">
-              <button class="btn btn-primary" disabled={!validationGroup}>
+              <button
+                class="btn btn-primary"
+                disabled={!validationGroup}
+                on:click={updateGroup}
+              >
                 {selectedGroup.id ? 'Update Group' : 'Create Group'}
               </button>
             </div>
@@ -263,6 +322,7 @@
     display: inline-block;
     margin: 0 1px 4px 0;
     vertical-align: top;
+    border-radius: 50%;
   }
 
   .avatar-char,
@@ -316,5 +376,9 @@
 
   .group-hover:hover {
     text-decoration: underline;
+  }
+
+  .no-group {
+    padding-left: 20px;
   }
 </style>

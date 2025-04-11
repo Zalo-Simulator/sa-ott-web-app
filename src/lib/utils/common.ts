@@ -48,7 +48,6 @@ export const isImage = (input: string | File): boolean => {
         const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg', '.tiff'];
         return imageExtensions.some(ext => input.toLowerCase().endsWith(ext));
     } else {
-        console.log('input.type', input.type)
         return input.type.startsWith("image/");
     }
 }

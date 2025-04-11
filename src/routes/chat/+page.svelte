@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { getlistFriends } from '$lib/service/user'
   import { getCurrentSessionUser } from '$lib/service/login'
   import { onMount, onDestroy } from 'svelte'
   import Avatar from '$lib/components/Avatar.svelte'
   import { WebSocketClient } from '$lib/service/web-socket-client'
-  import { WEBSOCKET } from '$lib/api/API-Endpoint'
+  import { GROUP_API, WEBSOCKET } from '$lib/api/API-Endpoint'
   import API from '$lib/api/Interceptor'
   import { FRIEND_API } from '$lib/api/API-Endpoint'
   import ReactionPicker from './ReactionPicker.svelte'
@@ -16,6 +15,7 @@
     getFileNameFromUrl
   } from '$lib/utils/common'
   import { MESSAGE_TYPE } from '$lib/constants/constants'
+  import InView from '$lib/components/InView.svelte'
 
   let friends: any = []
   let filterFriends: any = []
@@ -25,12 +25,14 @@
   let searchText = ''
   let wsClient: any
   let message = ''
-  let group_id = '1'
+  let group_id = ''
+  let container: HTMLDivElement
+  let NUM_MESSAGE = 10
+  let numMessage = 0
+  let isStillLoadMore = false
 
   onMount(async () => {
     await getFriends()
-    // friends[0].unread = 5
-    // friends[1].unread = 2
     if (friends.length > 0) {
       selectedPerson = friends[0]
     }
@@ -38,35 +40,19 @@
 
     wsClient = new WebSocketClient(
       WEBSOCKET.connect.replace('{id}', currentUser.id),
-      onMessage
+      receiveMessage
     )
-
-    //
   })
-
-  const getFriends = async () => {
-    friends = (await API.get(FRIEND_API.getFriends)).data.friends
-    friends = friends.filter((item: any) => item.id != currentUser.id)
-  }
 
   onDestroy(async () => {
     wsClient.closeConnection()
   })
 
-  const onMessage = async (data: any) => {
-    console.log('Message from server:', data)
-    const msg = JSON.parse(data)
-    if (msg.message_type == MESSAGE_TYPE.REACTION) {
-      let message = conversation.find(
-        (item: any) => item.message_id == msg.message_id
-      )
-      if (message) {
-        updateReaction(msg.reaction, message)
-      }
-    } else {
-      conversation.push(msg)
-    }
-    conversation = conversation
+  $: selectedPerson && selectPerson()
+
+  const getFriends = async () => {
+    friends = (await API.get(FRIEND_API.getFriends)).data.friends
+    friends = friends.filter((item: any) => item.id != currentUser.id)
   }
 
   const searchFriend = () => {
@@ -80,9 +66,17 @@
     filterFriends = res
   }
 
-  $: selectedPerson && getChatConversation()
+  const selectPerson = async () => {
+    group_id = (
+      await API.get(
+        GROUP_API.getPrivateGroup.replace('{friend_id}', selectedPerson.id)
+      )
+    ).data.id
+    numMessage = 0
+    getChatConversation()
+  }
 
-  function sumCountsByName(items: any[]): any[] {
+  const sumCountsByName = (items: any[]): any[] => {
     const map = new Map<string, number>()
 
     for (const item of items) {
@@ -97,8 +91,11 @@
   }
 
   const getChatConversation = async () => {
+    numMessage += NUM_MESSAGE
     let res = await API.get(
-      WEBSOCKET.getConversation.replace('{group_id}', group_id)
+      WEBSOCKET.getConversation
+        .replace('{group_id}', group_id)
+        .replace('{num_message}', numMessage.toString())
     )
     conversation = res.data.sort(
       (a: any, b: any) =>
@@ -108,51 +105,55 @@
     conversation.forEach((message: any) => {
       message.reactions = sumCountsByName(message.reactions)
     })
-  }
 
-  let file: any = null
-  let isDragOver = false
+    setTimeout(() => {
+      if (conversation.length < numMessage) {
+        isStillLoadMore = false
+      } else {
+        isStillLoadMore = true
+      }
+    }, 10)
 
-  const handleDrop = (event: any) => {
-    event.preventDefault()
-    isDragOver = false
-
-    const droppedFile = event.dataTransfer.files[0]
-    if (droppedFile) {
-      file = droppedFile
+    if (numMessage == NUM_MESSAGE) {
+      setTimeout(scrollToBottom, 10)
     }
   }
 
-  const handleDragOver = (event: any) => {
-    event.preventDefault()
-    isDragOver = true
-  }
-
-  const handleDragLeave = () => {
-    isDragOver = false
-  }
-
-  const handleKeyDown = (event: any) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault() // Prevent newline
-      send()
+  const receiveMessage = async (data: any) => {
+    console.log('Message from server:', data)
+    const msg = JSON.parse(data)
+    if (msg.message_type == MESSAGE_TYPE.REACTION) {
+      let message = conversation.find(
+        (item: any) => item.message_id == msg.message_id
+      )
+      if (message) {
+        updateReaction(msg.reaction, message)
+      }
+    } else if (msg.message_type == MESSAGE_TYPE.TMP) {
+      for (let i = conversation.length - 1; i >= 0; i--) {
+        if (
+          !conversation[i].message_id &&
+          conversation[i].message == msg.message
+        ) {
+          conversation[i].message_id = msg.message_id
+          break
+        }
+      }
+    } else {
+      conversation.push(msg)
+      wsClient.sendMessage({
+        message: msg.message,
+        message_id: msg.message_id,
+        group_id: msg.group_id,
+        message_type: MESSAGE_TYPE.TMP
+      })
     }
+    conversation = conversation
+
+    setTimeout(scrollToBottom, 100)
   }
 
-  const handleFileChange = (event: Event) => {
-    const input = event.target as HTMLInputElement
-    const selectedFile = input.files?.[0]
-    if (selectedFile) {
-      file = selectedFile
-    }
-  }
-
-  const triggerFileSelect = () => {
-    const fileInput = document.getElementById('fileInput') as HTMLInputElement
-    fileInput.click()
-  }
-
-  const send = async () => {
+  const sendMessage = async () => {
     //send file
     if (file) {
       let message_type = MESSAGE_TYPE.FILE
@@ -161,7 +162,6 @@
       } else if (isVideo(file)) {
         message_type = MESSAGE_TYPE.VIDEO
       }
-      console.log('Sending file:', file.name)
 
       const urlFile = await API.fileRequest(file)
 
@@ -179,7 +179,6 @@
 
       wsClient.sendMessage(msg)
       conversation.push(msg)
-      conversation = conversation
 
       // Upload or send file...
       file = null
@@ -200,12 +199,13 @@
         }
       }
       wsClient.sendMessage(msg)
-
       conversation.push(msg)
-      conversation = conversation
 
       message = ''
     }
+
+    conversation = conversation
+    setTimeout(scrollToBottom, 100)
   }
 
   const updateReaction = (icon: string, message: any) => {
@@ -239,6 +239,48 @@
     conversation = conversation
   }
 
+  let file: any = null
+  let isDragOver = false
+
+  const handleDrop = (event: any) => {
+    event.preventDefault()
+    isDragOver = false
+
+    const droppedFile = event.dataTransfer.files[0]
+    if (droppedFile) {
+      file = droppedFile
+    }
+  }
+
+  const handleDragOver = (event: any) => {
+    event.preventDefault()
+    isDragOver = true
+  }
+
+  const handleDragLeave = () => {
+    isDragOver = false
+  }
+
+  const handleKeyDown = (event: any) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault() // Prevent newline
+      sendMessage()
+    }
+  }
+
+  const handleFileChange = (event: Event) => {
+    const input = event.target as HTMLInputElement
+    const selectedFile = input.files?.[0]
+    if (selectedFile) {
+      file = selectedFile
+    }
+  }
+
+  const triggerFileSelect = () => {
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement
+    fileInput.click()
+  }
+
   const removeFile = () => {
     file = null
   }
@@ -248,6 +290,12 @@
     link.href = url
     //link.download = url;
     link.click()
+  }
+
+  const scrollToBottom = async () => {
+    if (container) {
+      container.scrollTop = container.scrollHeight
+    }
   }
 </script>
 
@@ -329,7 +377,13 @@
             </div>
           </div>
 
-          <div id="message-container" class="position-relative">
+          <div
+            id="message-container"
+            class="position-relative"
+            bind:this={container}
+          >
+            <InView bind:isStillLoadMore postAction={getChatConversation}
+            ></InView>
             <div class="chat-messages p-4">
               {#each conversation as item}
                 <div
@@ -434,7 +488,7 @@
                 {/if}
                 <button
                   class="btn btn-primary"
-                  on:click={send}
+                  on:click={sendMessage}
                   disabled={!message && !file}>Send</button
                 >
               </div>

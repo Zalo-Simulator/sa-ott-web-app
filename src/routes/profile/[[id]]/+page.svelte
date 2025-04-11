@@ -115,7 +115,7 @@
           <!-- Profile picture image-->
           <img
             class="img-account-profile rounded-circle mb-2"
-            src={selectedUser?.avatar_url}
+            src={selectedUser?.avatar_url || UserImage }
             on:error={(e: any) => (e.target.src = UserImage)}
             alt=""
           />

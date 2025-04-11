@@ -30,5 +30,11 @@ export const MESSAGE_TYPE = {
     IMAGE: 'image', 
     VIDEO: 'video', 
     FILE: 'file',
-    REACTION: 'reaction'
+    REACTION: 'reaction',
+    TMP: 'tmp'
+}
+
+export const GROUP_TYPE = {
+    PRIVATE: 'private', 
+    GROUP: 'group'
 }

@@ -24,7 +24,6 @@
   const searchFriend = async () => {
     users = (await API.get(USER_API.searchUsers.replace('{text}', searchText)))
       .data
-    console.log('friends', friends)
     users = users.filter(
       (item: any) =>
         item.id != currentUser.id &&
