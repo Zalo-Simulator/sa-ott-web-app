@@ -35,7 +35,7 @@
         await API.get(GROUP_API.getGroup.replace('{id}', groupId))
       ).data
       selectedGroup.members.forEach((member: any) => {
-        member.full_name = member.name
+        member.full_name = member.full_name || member.name
       })
       if (selectedGroup) {
         tabIndex = 1
@@ -48,7 +48,7 @@
     groups = groups.filter((item: any) => item.type == GROUP_TYPE.GROUP)
     groups.forEach((group: any) => {
       group.members.forEach((member: any) => {
-        member.full_name = member.name
+        member.full_name = member.full_name || member.name
       })
     })
   }

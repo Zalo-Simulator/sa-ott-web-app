@@ -81,3 +81,31 @@ export const getFileNameFromUrl = (url: string): string => {
         return '';
     }
 }
+
+export class NameTracker {
+    private names: Set<string>;
+
+    constructor() {
+        this.names = new Set();
+    }
+
+    add(name: string) {
+        if (!this.names.has(name)) {
+            this.names.add(name);
+        }
+    }
+
+    remove(name: string) {
+        if (this.names.has(name)) {
+            this.names.delete(name);
+        }
+    }
+
+    exists(name: string): boolean {
+        return this.names.has(name);
+    }
+
+    list(): string {
+        return Array.from(this.names).join(', ');;
+    }
+}

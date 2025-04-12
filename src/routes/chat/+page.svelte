@@ -13,7 +13,8 @@
     isImage,
     isVideo,
     getFileIcon,
-    getFileNameFromUrl
+    getFileNameFromUrl,
+    NameTracker
   } from '$lib/utils/common'
   import { MESSAGE_TYPE, stickers, GROUP_TYPE } from '$lib/constants/constants'
   import InView from '$lib/components/InView.svelte'
@@ -36,6 +37,7 @@
   let NUM_MESSAGE = 10
   let numMessage = 0
   let isStillLoadMore = false
+  const tracker = new NameTracker()
   let peopleTyping = ''
 
   onMount(async () => {
@@ -70,7 +72,7 @@
     groups = groups.filter((item: any) => item.type == GROUP_TYPE.GROUP)
     groups.forEach((group: any) => {
       group.members.forEach((member: any) => {
-        member.full_name = member.name
+        member.full_name = member.full_name || member.name
       })
     })
 
@@ -170,35 +172,52 @@
   const receiveMessage = async (data: any) => {
     console.log('Message from server:', data)
     const msg = JSON.parse(data)
-    if (msg.message_type == MESSAGE_TYPE.REACTION) {
-      let message = conversation.find(
-        (item: any) => item.message_id == msg.message_id
-      )
-      if (message) {
-        updateReaction(msg.reaction, message)
-      }
-    } else if (msg.message_type == MESSAGE_TYPE.TMP) {
-      for (let i = conversation.length - 1; i >= 0; i--) {
-        if (
-          !conversation[i].message_id &&
-          conversation[i].message == msg.message
-        ) {
-          conversation[i].message_id = msg.message_id
-          break
-        }
-      }
-    } else {
-      conversation.push(msg)
-      wsClient.sendMessage({
-        message: msg.message,
-        message_id: msg.message_id,
-        group_id: msg.group_id,
-        message_type: MESSAGE_TYPE.TMP
-      })
-    }
-    conversation = conversation
 
-    setTimeout(scrollToBottom, 100)
+    if (msg.group_id == group_id) {
+      switch (msg.message_type) {
+        case MESSAGE_TYPE.TYPING:
+          tracker.add(msg.person.full_name)
+          peopleTyping = tracker.list()
+          break
+        case MESSAGE_TYPE.STOP_TYPING:
+          tracker.remove(msg.person.full_name)
+          peopleTyping = tracker.list()
+          break
+        case MESSAGE_TYPE.UPDATE_ID:
+          for (let i = conversation.length - 1; i >= 0; i--) {
+            if (
+              !conversation[i].message_id &&
+              conversation[i].message == msg.message
+            ) {
+              conversation[i].message_id = msg.message_id
+              break
+            }
+          }
+          break
+        case MESSAGE_TYPE.REACTION:
+          let message = conversation.find(
+            (item: any) => item.message_id == msg.message_id
+          )
+          if (message) {
+            updateReaction(msg.reaction, message)
+          }
+          break
+
+        default:
+          conversation.push(msg)
+          wsClient.sendMessage({
+            message: msg.message,
+            message_id: msg.message_id,
+            group_id: msg.group_id,
+            message_type: MESSAGE_TYPE.UPDATE_ID
+          })
+          break
+      }
+
+      conversation = conversation
+
+      setTimeout(scrollToBottom, 100)
+    }
   }
 
   const sendMessage = async () => {
@@ -379,6 +398,46 @@
       conversation.push(msg)
     }
   }
+
+  //Typing
+  let typingTimeout: NodeJS.Timeout | null = null
+
+  const debounce = (func: Function, delay: number) => {
+    let timeoutId: NodeJS.Timeout
+    return (...args: any[]) => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => func(...args), delay)
+    }
+  }
+
+  const sendTyping = () => {
+    // Send typing status to other clients
+    const msg = {
+      group_id: group_id,
+      message_type: MESSAGE_TYPE.TYPING,
+      person: {
+        full_name: currentUser.full_name
+      }
+    }
+    wsClient.sendMessage(msg)
+
+    // Reset timer if user is still typing
+    if (typingTimeout) clearTimeout(typingTimeout)
+
+    // After 3 seconds of no typing, send stop typing
+    typingTimeout = setTimeout(() => {
+      const msg = {
+        group_id: group_id,
+        message_type: MESSAGE_TYPE.STOP_TYPING,
+        person: {
+          full_name: currentUser.full_name
+        }
+      }
+      wsClient.sendMessage(msg)
+    }, 3000)
+  }
+
+  const debouncedSendTyping = debounce(sendTyping, 300)
 </script>
 
 <svelte:head>
@@ -585,6 +644,7 @@
                   on:dragover={handleDragOver}
                   on:dragleave={handleDragLeave}
                   on:keydown={handleKeyDown}
+                  on:input={debouncedSendTyping}
                 ></textarea>
 
                 <button

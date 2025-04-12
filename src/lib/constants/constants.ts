@@ -32,7 +32,9 @@ export const MESSAGE_TYPE = {
     FILE: 'file',
     REACTION: 'reaction',
     STICKER: 'sticker',
-    TMP: 'tmp'
+    UPDATE_ID: 'update-id',
+    TYPING: 'typing',
+    STOP_TYPING: 'stop-typing'
 }
 
 export const GROUP_TYPE = {
