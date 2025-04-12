@@ -40,15 +40,15 @@ jobs:
             export $(cat /home/ubuntu/web-app/.env | xargs)
             cd /home/ubuntu/web-app
 
-            # echo "Updating system packages..."
-            # sudo apt update -y
+            echo "Updating system packages..."
+            sudo apt update -y
 
-            # echo "Installing dependencies..."
-            # curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            # sudo apt install -y nodejs git
+            echo "Installing dependencies..."
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt install -y nodejs git
 
-            # echo "Installing PM2..."
-            # sudo npm install -g pm2
+            echo "Installing PM2..."
+            sudo npm install -g pm2
 
             echo "Cloning or updating the repository..."
             if [ ! -d "$PROJECT_DIR" ]; then
@@ -71,10 +71,9 @@ jobs:
 
             echo "Building the SvelteKit application..."
             npm run build
-
-            echo "Starting the application with PM2..."
-            pm2 delete svelte-app || true
-            pm2 start npm --name "svelte-app" -- start -- --port 5173
+            
+            echo "Restarting or starting the application with PM2..."
+            pm2 restart svelte-app || pm2 start npm --name "svelte-app" -- start -- --port 5173
 
             echo "Deployment complete!"
           EOF
