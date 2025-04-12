@@ -96,12 +96,8 @@ const fileRequest = async (
 
         const responseJSON = await response.json();
 
-        const downloadRes = await get(
-            MEDIA_API.download.replace('{s3_key}', responseJSON.data.key)
-        )
-
         loader.hideLoader();
-        return downloadRes.data.url;
+        return responseJSON.data.key;
     } catch (error) {
         loader.hideLoader();
     }

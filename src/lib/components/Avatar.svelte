@@ -1,12 +1,15 @@
 <script lang="ts">
   import { getColorByText } from '$lib/utils/common'
-  import UserImage from '../../imgs/User Frame Black.png'
+  import S3Image from '$lib/components/S3Image.svelte'
   export let user: any
+
+  if(!user.full_name) {
+    user.full_name = " "
+  }
 </script>
 
 {#if user.avatar_url}
-  <img src={user.avatar_url} class="rounded-circle" alt="" 
-  on:error={(e: any) => (e.target.src = UserImage)}/>
+  <S3Image s3Token={user.avatar_url} cssClass="rounded-circle avatar-small"></S3Image>
 {:else}
   <div
     class="letter-rounded-circle"
@@ -17,7 +20,7 @@
 {/if}
 
 <style>
-  img {
+  :global(.avatar-small) {
     width: 40px;
     height: 40px;
   }

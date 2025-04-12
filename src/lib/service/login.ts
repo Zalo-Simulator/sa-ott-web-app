@@ -1,5 +1,9 @@
 import { IndexedDb } from "$lib/service/IndexedDb";
 const dbInstance = IndexedDb.getInstance("common-storage", "session");
+import { AUTH_API } from '$lib/api/API-Endpoint'
+import API from '$lib/api/Interceptor'
+
+const EXPIRATION_TIME = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
 
 export const isUserLoggedIn = async () => {
     let res = await dbInstance.getValue("session-login")
@@ -9,7 +13,8 @@ export const isUserLoggedIn = async () => {
 export const logInUserSession = async (data: any, phone: string) => {
     dbInstance.saveValue("session-login", {
         access_token: data.access_token,
-        token_type: data.token_type
+        token_type: data.token_type,
+        cachedTime: Date.now()
     });
     updateUserSession({
         id: data.id,
@@ -22,6 +27,26 @@ export const logInUserSession = async (data: any, phone: string) => {
 export const logOutUserSession = async () => {
     dbInstance.saveValue("session-login", null);
     dbInstance.saveValue("current-user", null);
+}
+
+export const refeshUserSession = async () => {
+    let oldSession = await dbInstance.getValue("session-login")
+    if (!oldSession?.cachedTime  || Date.now() - oldSession?.cachedTime > EXPIRATION_TIME) {
+        let session = (
+            await API.post(
+                AUTH_API.refreshToken,
+                undefined,
+                '',
+                null,
+                true
+            )
+        ).data
+        dbInstance.saveValue("session-login", {
+            access_token: session.access_token,
+            token_type: session.token_type,
+            cachedTime: Date.now()
+        });
+    }
 }
 
 export const getUserSession = async () => {

@@ -3,7 +3,8 @@
   import {
     isUserLoggedIn,
     logOutUserSession,
-    getCurrentSessionUser
+    getCurrentSessionUser,
+    refeshUserSession
   } from '$lib/service/login'
   import { goto } from '$app/navigation'
   import { onMount } from 'svelte'
@@ -15,6 +16,8 @@
   import UserImage from '../imgs/User Frame.png'
   import API from '$lib/api/Interceptor'
   import { AUTH_API } from '$lib/api/API-Endpoint'
+  import S3Image from '$lib/components/S3Image.svelte'
+
   let showDialog = false
   let currentUser: any = {}
 
@@ -51,19 +54,21 @@
     let sidebar = document.querySelector('.sidebar')
     let closeBtn = document.querySelector('#btn')
 
-    closeBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('open')
+    closeBtn?.addEventListener('click', () => {
+      sidebar?.classList.toggle('open')
       menuBtnChange() //calling the function(optional)
     })
 
     // following are the code to change sidebar button(optional)
     function menuBtnChange() {
-      if (sidebar.classList.contains('open')) {
-        closeBtn.classList.replace('bx-menu', 'bx-menu-alt-right') //replacing the iocns class
+      if (sidebar?.classList.contains('open')) {
+        closeBtn?.classList.replace('bx-menu', 'bx-menu-alt-right') //replacing the iocns class
       } else {
-        closeBtn.classList.replace('bx-menu-alt-right', 'bx-menu') //replacing the iocns class
+        closeBtn?.classList.replace('bx-menu-alt-right', 'bx-menu') //replacing the iocns class
       }
     }
+
+    refeshUserSession()
   })
 </script>
 
@@ -127,11 +132,11 @@
           viewProfile(currentUser)
         }}
       >
-        <img
-          src={currentUser?.avatar_url || UserImage}
-          alt="profileImg"
-          on:error={(e: any) => (e.target.src = UserImage)}
-        />
+        <S3Image
+          s3Token={currentUser?.avatar_url}
+          cssClass=" "
+          defaultImage={UserImage}
+        ></S3Image>
         <div class="name_job">
           <div class="name">{currentUser?.full_name}</div>
         </div>

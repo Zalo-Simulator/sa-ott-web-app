@@ -5,7 +5,7 @@
   import { WebSocketClient } from '$lib/service/web-socket-client'
   import { GROUP_API, WEBSOCKET } from '$lib/api/API-Endpoint'
   import API from '$lib/api/Interceptor'
-  import { FRIEND_API } from '$lib/api/API-Endpoint'
+  import { FRIEND_API, MEDIA_API } from '$lib/api/API-Endpoint'
   import ReactionPicker from './ReactionPicker.svelte'
   import {
     formatDateTime,
@@ -16,6 +16,8 @@
   } from '$lib/utils/common'
   import { MESSAGE_TYPE, stickers } from '$lib/constants/constants'
   import InView from '$lib/components/InView.svelte'
+  import S3Image from '$lib/components/S3Image.svelte'
+  import S3Video from '$lib/components/S3Video.svelte'
 
   let friends: any = []
   let filterFriends: any = []
@@ -164,10 +166,10 @@
         message_type = MESSAGE_TYPE.VIDEO
       }
 
-      const urlFile = await API.fileRequest(file)
+      const s3Key = await API.fileRequest(file)
 
       const msg = {
-        message: urlFile,
+        message: s3Key,
         group_id: group_id,
         message_type: message_type,
         time: new Date().toString(),
@@ -278,6 +280,7 @@
   }
 
   const triggerFileSelect = () => {
+    showStickers = false
     const fileInput = document.getElementById('fileInput') as HTMLInputElement
     fileInput.click()
   }
@@ -286,10 +289,19 @@
     file = null
   }
 
-  const downloadFile = (url: string) => {
+  const downloadFile = async (s3key: string) => {
     const link = document.createElement('a')
+    link.target = '_blank'
+    let url = (
+      await API.get(
+        MEDIA_API.download.replace('{s3_key}', encodeURIComponent(s3key)),
+        undefined,
+        '',
+        null,
+        true
+      )
+    ).data.url
     link.href = url
-    //link.download = url;
     link.click()
   }
 
@@ -302,7 +314,6 @@
   let showStickers = false
 
   const selectSticker = (sticker: { type: string; value: string }) => {
-    //sendMessage(sticker.value)
     if (sticker.type == 'emoji') {
       message += sticker.value
     } else {
@@ -427,13 +438,6 @@
                   >
                     {#if item.message_type == MESSAGE_TYPE.TEXT}
                       {item.message}
-                    {:else if item.message_type == MESSAGE_TYPE.IMAGE}
-                      <!-- svelte-ignore a11y_img_redundant_alt -->
-                      <img
-                        src={item.message}
-                        alt="chat image"
-                        class="chat-image"
-                      />
                     {:else if item.message_type == MESSAGE_TYPE.STICKER}
                       <!-- svelte-ignore a11y_img_redundant_alt -->
                       <img
@@ -441,12 +445,15 @@
                         alt="chat image"
                         class="chat-image"
                       />
+                    {:else if item.message_type == MESSAGE_TYPE.IMAGE}
+                      <S3Image
+                        s3Token={item.message}
+                        cssClass="chat-image"
+                        defaultImage={null}
+                      ></S3Image>
                     {:else if item.message_type == MESSAGE_TYPE.VIDEO}
-                      <!-- svelte-ignore a11y_media_has_caption -->
-                      <video controls class="chat-video">
-                        <source src={item.message} />
-                        Your browser does not support the video tag.
-                      </video>
+                      <S3Video s3Token={item.message} cssClass="chat-video"
+                      ></S3Video>
                     {:else}
                       <!-- svelte-ignore a11y_click_events_have_key_events -->
                       <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -729,13 +736,14 @@
     display: none;
   }
 
-  .chat-image {
+  .chat-image,
+  :global(.chat-image) {
     max-width: 100%;
     border-radius: 5px;
     width: 200px;
   }
 
-  .chat-video {
+  :global(.chat-video) {
     width: 100%;
     border-radius: 5px;
     width: 200px;

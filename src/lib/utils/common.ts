@@ -75,9 +75,7 @@ export const getFileIcon = (fileName: string) => {
 
 export const getFileNameFromUrl = (url: string): string => {
     try {
-        const parsedUrl = new URL(url);
-        const pathname = parsedUrl.pathname;
-        return decodeURIComponent(pathname.substring(pathname.lastIndexOf('/') + 1));
+        return decodeURIComponent(url.substring(url.lastIndexOf('/') + 1));
     } catch (error) {
         console.error('Invalid URL:', error);
         return '';

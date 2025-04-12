@@ -6,7 +6,7 @@
   import API from '$lib/api/Interceptor'
   import { AUTH_API, USER_API } from '$lib/api/API-Endpoint'
   import { onMount } from 'svelte'
-  import UserImage from '../../../imgs/User Frame Black.png'
+  import S3Image from '$lib/components/S3Image.svelte'
 
   let currentUser: any = {}
   let selectedUser = {
@@ -86,9 +86,10 @@
     }
 
     const file = files[0]
-    const urlFile = await API.fileRequest(file)
+    const s3Key = await API.fileRequest(file)
 
-    selectedUser.avatar_url = urlFile
+    selectedUser.avatar_url = s3Key
+
     //update to session & database
     updateUser()
   }
@@ -113,12 +114,10 @@
         <div class="card-header">Profile Picture</div>
         <div class="card-body text-center">
           <!-- Profile picture image-->
-          <img
-            class="img-account-profile rounded-circle mb-2"
-            src={selectedUser?.avatar_url || UserImage}
-            on:error={(e: any) => (e.target.src = UserImage)}
-            alt=""
-          />
+          <S3Image
+            s3Token={selectedUser?.avatar_url}
+            cssClass="img-account-profile rounded-circle mb-2"
+          ></S3Image>
           {#if currentUser.id == selectedUser.id}
             <!-- Profile picture help block-->
             <div class="small font-italic text-muted mb-4">
@@ -243,10 +242,10 @@
 </div>
 
 <style>
-  .img-account-profile {
+  :global(.img-account-profile) {
     height: 10rem;
   }
-  .rounded-circle {
+  :global(.rounded-circle) {
     border-radius: 50% !important;
   }
   .card {
