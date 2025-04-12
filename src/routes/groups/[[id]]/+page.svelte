@@ -174,7 +174,6 @@
                 {#each group.members as member, index}
                   {#if index < 4}
                     {#if member.avatar_url}
-                      <!-- <img class="avatar-img" src={member.avatar_url} alt="" /> -->
                       <S3Image s3Token={member.avatar_url} cssClass="avatar-img"
                       ></S3Image>
                     {:else}

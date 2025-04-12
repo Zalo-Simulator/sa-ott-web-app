@@ -45,7 +45,7 @@
             {user.full_name}
           </p>
           <p class="inbox-item-text">
-            {user.is_active ? 'Online' : 'Offline'}
+            {user.is_online ? 'Online' : 'Offline'}
           </p>
           <p class="inbox-item-date">
             {#if !excludeActionItems.some((item: number) => item == user.id)}

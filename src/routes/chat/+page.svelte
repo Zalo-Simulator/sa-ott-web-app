@@ -2,6 +2,7 @@
   import { getCurrentSessionUser } from '$lib/service/login'
   import { onMount, onDestroy } from 'svelte'
   import Avatar from '$lib/components/Avatar.svelte'
+  import GroupAvatar from '$lib/components/GroupAvatar.svelte'
   import { WebSocketClient } from '$lib/service/web-socket-client'
   import { GROUP_API, WEBSOCKET } from '$lib/api/API-Endpoint'
   import API from '$lib/api/Interceptor'
@@ -14,14 +15,17 @@
     getFileIcon,
     getFileNameFromUrl
   } from '$lib/utils/common'
-  import { MESSAGE_TYPE, stickers } from '$lib/constants/constants'
+  import { MESSAGE_TYPE, stickers, GROUP_TYPE } from '$lib/constants/constants'
   import InView from '$lib/components/InView.svelte'
   import S3Image from '$lib/components/S3Image.svelte'
   import S3Video from '$lib/components/S3Video.svelte'
 
   let friends: any = []
+  let groups: any = []
   let filterFriends: any = []
-  let selectedPerson: any = null
+  let filterGroups: any = []
+  let selectedPerson: any
+  let selectedGroup: any
   let conversation: any = []
   let currentUser: any = {}
   let searchText = ''
@@ -32,14 +36,13 @@
   let NUM_MESSAGE = 10
   let numMessage = 0
   let isStillLoadMore = false
+  let peopleTyping = ''
 
   onMount(async () => {
     currentUser = await getCurrentSessionUser()
-    await getFriends()
-    if (friends.length > 0) {
-      selectedPerson = friends[0]
-    }
-    filterFriends = friends
+    getFriends()
+
+    getlistGroups()
 
     wsClient = new WebSocketClient(
       WEBSOCKET.connect.replace('{id}', currentUser.id),
@@ -51,14 +54,30 @@
     wsClient.closeConnection()
   })
 
-  $: selectedPerson && selectPerson()
-
   const getFriends = async () => {
     friends = (await API.get(FRIEND_API.getFriends)).data.friends
     friends = friends.filter((item: any) => item.id != currentUser.id)
+
+    if (friends.length > 0) {
+      selectPerson(friends[0])
+    }
+    filterFriends = friends
   }
 
-  const searchFriend = () => {
+  const getlistGroups = async () => {
+    groups = (await API.get(GROUP_API.getGroups, undefined, '', null, true))
+      .data.groups
+    groups = groups.filter((item: any) => item.type == GROUP_TYPE.GROUP)
+    groups.forEach((group: any) => {
+      group.members.forEach((member: any) => {
+        member.full_name = member.name
+      })
+    })
+
+    filterGroups = groups
+  }
+
+  const searchFriendGroup = () => {
     let res: any = []
     let text = searchText.toLowerCase()
     for (let i = 0; i < friends.length; i++) {
@@ -67,14 +86,40 @@
       }
     }
     filterFriends = res
+
+    //groups
+    res = []
+    for (let i = 0; i < groups.length; i++) {
+      if (groups[i].name.toLowerCase().indexOf(text) >= 0) {
+        res.push(groups[i])
+      }
+    }
+    filterGroups = res
   }
 
-  const selectPerson = async () => {
-    group_id = (
-      await API.get(
-        GROUP_API.getPrivateGroup.replace('{friend_id}', selectedPerson.id)
-      )
-    ).data.id
+  const selectPerson = async (person: any) => {
+    selectedPerson = person
+    selectedGroup = null
+    if (selectedPerson.group_id) {
+      group_id = selectedPerson.group_id
+    } else {
+      group_id = (
+        await API.get(
+          GROUP_API.getPrivateGroup.replace('{friend_id}', selectedPerson.id)
+        )
+      ).data.id
+      selectedPerson.group_id = group_id
+    }
+
+    numMessage = 0
+    getChatConversation()
+  }
+
+  const selectGroup = async (group: any) => {
+    selectedGroup = group
+    selectedPerson = null
+    group_id = group.id
+
     numMessage = 0
     getChatConversation()
   }
@@ -360,15 +405,15 @@
                   class="form-control my-3"
                   placeholder="Search..."
                   bind:value={searchText}
-                  on:change={searchFriend}
+                  on:change={searchFriendGroup}
                 />
               </div>
             </div>
           </div>
 
           <!-- svelte-ignore a11y_no_static_element_interactions -->
-          {#if filterFriends.length <= 0}
-            <span class="no-friend">No friend found</span>
+          {#if filterFriends.length + filterGroups.length <= 0}
+            <span class="no-friend">No friend or group found</span>
           {/if}
           {#each filterFriends as friend}
             <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -377,8 +422,8 @@
               class="list-group-item list-group-item-action border-0"
               class:selected-chat={selectedPerson?.id == friend.id}
               on:click={() => {
-                if (selectedPerson.id != friend.id) {
-                  selectedPerson = friend
+                if (selectedPerson?.id != friend.id) {
+                  selectPerson(friend)
                 }
               }}
             >
@@ -387,11 +432,38 @@
               {/if}
               <div class="d-flex align-items-start">
                 <Avatar user={friend}></Avatar>
-                <div class="flex-grow-1 ml-3">
+                <div class="flex-grow-1 ml-4">
                   {friend.full_name}
                   <div class="small">
                     <span class="fas fa-circle chat-online"></span>
-                    {friend.is_active ? 'Online' : 'Offline'}
+                    {friend.is_online ? 'Online' : 'Offline'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          {/each}
+          {#each filterGroups as group}
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div
+              class="list-group-item list-group-item-action border-0"
+              class:selected-chat={selectedGroup?.id == group.id}
+              on:click={() => {
+                if (selectedGroup?.id != group.id) {
+                  selectGroup(group)
+                }
+              }}
+            >
+              {#if group.unread}
+                <div class="badge bg-success float-right">{group.unread}</div>
+              {/if}
+              <div class="d-flex align-items-start">
+                <GroupAvatar users={group.members}></GroupAvatar>
+                <div class="flex-grow-1 ml-2">
+                  {group.name}
+                  <div class="small">
+                    <span class="fas fa-circle chat-online"></span>
+                    Group
                   </div>
                 </div>
               </div>
@@ -406,10 +478,21 @@
                 {#if selectedPerson}
                   <Avatar user={selectedPerson}></Avatar>
                 {/if}
+                {#if selectedGroup}
+                  <GroupAvatar users={selectedGroup.members}></GroupAvatar>
+                {/if}
               </div>
               <div class="flex-grow-1 pl-3">
-                <strong>{selectedPerson?.full_name}</strong>
-                <div class="text-muted small"><em>Typing...</em></div>
+                <strong
+                  >{selectedPerson?.full_name || selectedGroup?.name}</strong
+                >
+                <div class="text-muted small">
+                  <em>
+                    {#if peopleTyping}
+                      {peopleTyping} typing...
+                    {/if}
+                  </em>
+                </div>
               </div>
             </div>
           </div>
