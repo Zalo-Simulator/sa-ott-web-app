@@ -71,10 +71,9 @@ jobs:
 
             echo "Building the SvelteKit application..."
             npm run build
-
-            echo "Starting the application with PM2..."
-            pm2 delete svelte-app || true
-            pm2 start npm --name "svelte-app" -- start -- --port 5173
+            
+            echo "Restarting or starting the application with PM2..."
+            pm2 restart svelte-app || pm2 start npm --name "svelte-app" -- start -- --port 5173
 
             echo "Deployment complete!"
           EOF
