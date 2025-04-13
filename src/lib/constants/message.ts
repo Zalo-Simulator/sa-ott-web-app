@@ -13,4 +13,8 @@ export const MESSAGE = {
     SUCCESS_MAKE_FRIEND : 'Your request has been sent successfully!',
     SUCCESS_DECLINE_FRIEND : 'A friend has been removed!',
     SUCCESS_ACCEPT_FRIEND : 'You has been made new friend!',
+
+    
+    SUCCESS_CREATE_GROUP : 'Your group has been created successfully!',
+    SUCCESS_UPDATE_GROUP : 'Your group has been updated successfully!',
 }

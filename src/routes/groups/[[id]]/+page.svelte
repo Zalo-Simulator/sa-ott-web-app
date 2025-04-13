@@ -97,18 +97,24 @@
         GROUP_API.updateGroup.replace('{id}', selectedGroup.id.toString()),
         {
           name: selectedGroup.name,
-          avatar_url: '1'
-          // member_ids: selectedGroup.members.map((item: any) => item.id),
-        }
+          avatar_url: '1',
+          member_ids: selectedGroup.members.map((item: any) => item.id)
+        },
+        MESSAGE.SUCCESS_UPDATE_GROUP
       )
     }
     //Create new group
     else {
-      await API.post(GROUP_API.createGroup, {
-        name: selectedGroup.name,
-        member_ids: selectedGroup.members.map((item: any) => item.id),
-        type: GROUP_TYPE.GROUP
-      })
+      await API.post(
+        GROUP_API.createGroup,
+        {
+          name: selectedGroup.name,
+          member_ids: selectedGroup.members.map((item: any) => item.id),
+          type: GROUP_TYPE.GROUP
+        },
+        MESSAGE.SUCCESS_CREATE_GROUP
+      )
+      tabIndex = 0
     }
   }
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getCachedImageUrl, cacheImageUrl } from '$lib/service/imageCache'
+  import { getCachedImageUrl, cacheImageUrl } from '$lib/service/cache'
   import { MEDIA_API } from '$lib/api/API-Endpoint'
   import API from '$lib/api/Interceptor'
 

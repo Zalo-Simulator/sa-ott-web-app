@@ -1,5 +1,7 @@
-const URL_PREFIX = "http://52.23.164.179:8000";
-const WEBSOCKET_PREFIX = "ws://52.23.164.179:8000/ws/users";
+const URL_PREFIX = "http://52.23.164.179:8000"; //import.meta.env.VITE_API_URL // 
+const WEBSOCKET_PREFIX = "ws://52.23.164.179:8000/ws/users";// import.meta.env.VITE_WEBSOCKET_URL 
+
+console.log(import.meta.env.VITE_API_URL);
 
 export const AUTH_API = {
     login: `${URL_PREFIX}/auth/login`,
@@ -15,15 +17,15 @@ export const USER_API = {
     getUser: `${URL_PREFIX}/users/{id}`,
     getCurrentUser: `${URL_PREFIX}/users/me`,
     updateUser: `${URL_PREFIX}/users/me`,
-    searchUsers: `${URL_PREFIX}/users/?text={text}`,    
+    searchUsers: `${URL_PREFIX}/users/?text={text}`,
 };
 
 export const FRIEND_API = {
     getFriends: `${URL_PREFIX}/friends`,
     getPendingFriends: `${URL_PREFIX}/friends/pending`,
-    makeFriend:  `${URL_PREFIX}/friends/{friend_id}`,
-    acceptFriend:  `${URL_PREFIX}/friends/{friend_id}`,
-    removeFriend:  `${URL_PREFIX}/friends/{friend_id}`,    
+    makeFriend: `${URL_PREFIX}/friends/{friend_id}`,
+    acceptFriend: `${URL_PREFIX}/friends/{friend_id}`,
+    removeFriend: `${URL_PREFIX}/friends/{friend_id}`,
 };
 
 export const GROUP_API = {
@@ -32,7 +34,7 @@ export const GROUP_API = {
     getGroup: `${URL_PREFIX}/groups/{id}`,
     updateGroup: `${URL_PREFIX}/groups/{id}`,
     getPrivateGroup: `${URL_PREFIX}/groups/private/{friend_id}`
-    
+
 };
 
 export const MEDIA_API = {

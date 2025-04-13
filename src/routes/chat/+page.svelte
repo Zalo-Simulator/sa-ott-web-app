@@ -20,6 +20,10 @@
   import InView from '$lib/components/InView.svelte'
   import S3Image from '$lib/components/S3Image.svelte'
   import S3Video from '$lib/components/S3Video.svelte'
+  import {
+    getAllPrivateGroupIds,
+    cahchePrivateGroupId
+  } from '$lib/service/cache'
 
   let friends: any = []
   let groups: any = []
@@ -59,6 +63,10 @@
   const getFriends = async () => {
     friends = (await API.get(FRIEND_API.getFriends)).data.friends
     friends = friends.filter((item: any) => item.id != currentUser.id)
+    let privateGroups = await getAllPrivateGroupIds()
+    friends.forEach((item: any) => {
+      item.group_id = privateGroups['user' + item.id]
+    })
 
     if (friends.length > 0) {
       selectPerson(friends[0])
@@ -111,6 +119,7 @@
         )
       ).data.id
       selectedPerson.group_id = group_id
+      cahchePrivateGroupId(selectedPerson.id, group_id)
     }
 
     numMessage = 0
@@ -217,6 +226,29 @@
       conversation = conversation
 
       setTimeout(scrollToBottom, 100)
+    } else {
+      let selectedItem
+      if (msg.is_group === true) {
+        selectedItem = groups.find((item: any) => {
+          return item.id == msg.group_id
+        })
+        if (selectedItem) {
+          selectedItem.unread = selectedItem.unread
+            ? selectedItem.unread + 1
+            : 1
+        }
+        filterGroups = filterGroups
+      } else if (msg.is_group === false) {
+        selectedItem = friends.find((item: any) => {
+          return item.id == msg.person.id
+        })
+        if (selectedItem) {
+          selectedItem.unread = selectedItem.unread
+            ? selectedItem.unread + 1
+            : 1
+        }
+        filterFriends = filterFriends
+      }
     }
   }
 
@@ -237,6 +269,7 @@
         group_id: group_id,
         message_type: message_type,
         time: new Date().toString(),
+        is_group: !!selectedGroup,
         person: {
           id: currentUser.id,
           full_name: currentUser.full_name,
@@ -259,6 +292,7 @@
         group_id: group_id,
         message_type: MESSAGE_TYPE.TEXT,
         time: new Date().toString(),
+        is_group: !!selectedGroup,
         person: {
           id: currentUser.id,
           full_name: currentUser.full_name,
@@ -386,6 +420,7 @@
         group_id: group_id,
         message_type: MESSAGE_TYPE.STICKER,
         time: new Date().toString(),
+        is_group: !!selectedGroup,
         person: {
           id: currentUser.id,
           full_name: currentUser.full_name,

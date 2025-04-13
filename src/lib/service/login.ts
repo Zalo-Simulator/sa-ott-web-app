@@ -1,5 +1,5 @@
 import { IndexedDb } from "$lib/service/IndexedDb";
-const dbInstance = IndexedDb.getInstance("common-storage", "session");
+const dbInstance = IndexedDb.getInstance("common-storage-db", "session");
 import { AUTH_API } from '$lib/api/API-Endpoint'
 import API from '$lib/api/Interceptor'
 
