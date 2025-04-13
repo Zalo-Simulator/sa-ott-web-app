@@ -125,20 +125,6 @@
     right: 0;
   }
 
-  .preloader-container.preloader-deactivate {
-    visibility: hidden;
-  }
-
-  .preloader-container.preloader-deactivate::after,
-  .preloader-container.preloader-deactivate::before {
-    width: 0;
-  }
-
-  .preloader-container.preloader-deactivate .loader {
-    opacity: 0;
-    visibility: hidden;
-  }
-
   @-webkit-keyframes loader-outter {
     0% {
       -webkit-transform: rotate(0deg);

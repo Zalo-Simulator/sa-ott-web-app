@@ -158,6 +158,7 @@
             ]}
             emptyText="No user found, please enter other names"
             excludeActionItems={listPendingIds}
+            showOnlineStatus={false}
           ></ListUsers>
         </div>
         <!-- end col -->
@@ -178,6 +179,7 @@
               }
             ]}
             emptyText="You don't have pending friend request"
+            showOnlineStatus={false}
           ></ListUsers>
         </div>
       </div>

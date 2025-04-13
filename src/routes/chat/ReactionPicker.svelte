@@ -39,6 +39,7 @@
 </script>
 
 <div class="reaction-picker">
+  <!-- svelte-ignore a11y_consider_explicit_label -->
   <button class="trigger-button" on:click={openPopup}>
     <svg
       class="heart-icon"
@@ -86,11 +87,6 @@
     width: 24px;
     height: 24px;
     display: block;
-  }
-
-  .selected-reaction {
-    margin-left: 8px;
-    font-size: 20px;
   }
 
   .popup {

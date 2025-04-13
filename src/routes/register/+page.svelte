@@ -1,25 +1,16 @@
 <script lang="ts">
-  import { isUserLoggedIn } from '$lib/service/login'
+  import { redirect } from '$lib/service/login'
   import Particles from '$lib/components/Particles.svelte'
-  import { goto } from '$app/navigation'
   import OTP from '$lib/components/OTP.svelte'
   import { pageHomeClass } from '$lib/service/store'
   import API from '$lib/api/Interceptor'
   import { AUTH_API } from '$lib/api/API-Endpoint'
-  import { onMount } from 'svelte'
-
   pageHomeClass.set('disable-menu')
 
   let phoneNumber = ''
   let password = ''
 
-  onMount(async () => {
-    if (await isUserLoggedIn()) {
-      goto('/chat').then(() => {
-        window.location.reload()
-      })
-    }
-  })
+  redirect()
 
   const register = async () => {
     await API.post(AUTH_API.register, {

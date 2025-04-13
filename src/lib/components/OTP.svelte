@@ -11,6 +11,7 @@
   import { validatePhoneNumber, isValidPassword } from '$lib/utils/validation'
   import { MESSAGE } from '$lib/constants/message'
   import { loader } from '$lib/components/loader/loader'
+  import { pageHomeClass } from '$lib/service/store'
 
   export let showCheckbox = true
   export let finishHandler: any = null
@@ -106,7 +107,7 @@
       if (res) {
         logInUserSession(res.data, phoneNumber)
         goto('/profile').then(() => {
-          window.location.reload()
+          pageHomeClass.set('')
         })
       }
     }

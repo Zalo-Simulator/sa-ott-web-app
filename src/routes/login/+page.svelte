@@ -1,24 +1,16 @@
 <script lang="ts">
-  import { logInUserSession } from '$lib/service/login'
-  import { isUserLoggedIn } from '$lib/service/login'
+  import { redirect, logInUserSession } from '$lib/service/login'
   import { goto } from '$app/navigation'
   import Particles from '$lib/components/Particles.svelte'
   import { pageHomeClass } from '$lib/service/store'
   import API from '$lib/api/Interceptor'
   import { AUTH_API } from '$lib/api/API-Endpoint'
   import { MESSAGE } from '$lib/constants/message'
-  import { onMount } from 'svelte'
 
   pageHomeClass.set('disable-menu')
   let isValidLogin = true
 
-  onMount(async () => {
-    if (await isUserLoggedIn()) {
-      goto('/chat').then(() => {
-        window.location.reload()
-      })
-    }
-  })
+  redirect()
 
   const login = async () => {
     const res = await API.post(AUTH_API.login, {
@@ -29,7 +21,7 @@
       isValidLogin = true
       logInUserSession(res.data, phoneNumber)
       goto('/chat').then(() => {
-        window.location.reload()
+        pageHomeClass.set('')
       })
     } else {
       isValidLogin = false

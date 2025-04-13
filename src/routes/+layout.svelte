@@ -29,14 +29,13 @@
     await API.post(AUTH_API.logout, {})
     logOutUserSession()
     goto('/login').then(() => {
-      window.location.reload()
+      showDialog = false
+      pageHomeClass.set('disable-menu')
     })
   }
 
   const viewProfile = (user: any) => {
-    goto(`/profile/${user.id}`).then(() => {
-      window.location.reload()
-    })
+    goto(`/profile/${user.id}`).then(() => {})
   }
 
   onMount(async () => {
@@ -47,7 +46,7 @@
       $page.url.pathname.toLocaleLowerCase() != '/reset-password'
     ) {
       goto('/login').then(() => {
-        window.location.reload()
+        pageHomeClass.set('disable-menu')
       })
     }
     currentUser = await getCurrentSessionUser()

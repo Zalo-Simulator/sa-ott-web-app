@@ -8,6 +8,7 @@
   //{label, handler, style}
   export let buttons: any = []
   export let excludeActionItems: any = []
+  export let showOnlineStatus = true
 
   const viewProfile = (user: any) => {
     if (ableViewProfie) {
@@ -44,8 +45,13 @@
           >
             {user.full_name}
           </p>
-          <p class="inbox-item-text">
-            {user.is_online ? 'Online' : 'Offline'}
+          <p
+            class="inbox-item-text"
+            class:chat-online={user.is_online && showOnlineStatus}
+            class:chat-offline={!user.is_online && showOnlineStatus}
+            class:chat-unknow={!showOnlineStatus}
+          >
+            {showOnlineStatus? (user.is_online ? 'Online' : 'Offline') : 'Unknown'}
           </p>
           <p class="inbox-item-date">
             {#if !excludeActionItems.some((item: number) => item == user.id)}
@@ -100,7 +106,6 @@
   }
 
   .inbox-widget .inbox-item .inbox-item-text {
-    color: #98a6ad;
     display: block;
     font-size: 14px;
     margin: 0;

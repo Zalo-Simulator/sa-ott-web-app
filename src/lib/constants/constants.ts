@@ -32,7 +32,6 @@ export const MESSAGE_TYPE = {
     FILE: 'file',
     REACTION: 'reaction',
     STICKER: 'sticker',
-    UPDATE_ID: 'update-id',
     TYPING: 'typing',
     STOP_TYPING: 'stop-typing'
 }

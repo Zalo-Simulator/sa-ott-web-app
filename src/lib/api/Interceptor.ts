@@ -4,6 +4,7 @@ import { loader } from "$lib/components/loader/loader";
 import { TOAST_THEME } from "$lib/constants/constants";
 import { getUserSession, getCurrentSessionUser } from "$lib/service/login"
 import { MEDIA_API } from '$lib/api/API-Endpoint'
+import { cacheFile } from '$lib/service/cache'
 
 // implement a method to execute all the request from here.
 const apiRequest = async (
@@ -97,6 +98,7 @@ const fileRequest = async (
         const responseJSON = await response.json();
 
         loader.hideLoader();
+        cacheFile(responseJSON.data.key)
         return responseJSON.data.key;
     } catch (error) {
         loader.hideLoader();

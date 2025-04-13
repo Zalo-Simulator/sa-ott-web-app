@@ -1,6 +1,3 @@
-
-import { FileText, FileSpreadsheet, File } from 'lucide-svelte'
-
 export const getColorByText = (text: string): string => {
     // Create a hash from the text
     let hash = 0;
@@ -40,45 +37,6 @@ export const formatDateTime = (input: string): string => {
         const year = inputDate.getFullYear().toString().slice(-2);
 
         return `${day}/${month}/${year} ${hours}:${minutes}`;
-    }
-}
-
-export const isImage = (input: string | File): boolean => {
-    if (typeof input === 'string') {
-        const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg', '.tiff'];
-        return imageExtensions.some(ext => input.toLowerCase().endsWith(ext));
-    } else {
-        return input.type.startsWith("image/");
-    }
-}
-
-export const isVideo = (input: string | File): boolean => {
-    const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.flv', '.wmv', '.3gp', '.mpeg'];
-
-    if (typeof input === 'string') {
-        const lowerCaseName = input.toLowerCase();
-        return videoExtensions.some(ext => lowerCaseName.endsWith(ext));
-    } else {
-        return input.type.startsWith('video/');
-    }
-}
-
-export const getFileIcon = (fileName: string) => {
-    const ext = fileName.split('.').pop()?.toLowerCase();
-
-    if (ext === 'pdf') return { icon: FileText, color: 'red' };
-    if (ext === 'doc' || ext === 'docx') return { icon: FileText, color: 'blue' };
-    if (ext === 'xls' || ext === 'xlsx' || ext === 'csv') return { icon: FileSpreadsheet, color: 'green' };
-
-    return { icon: File, color: 'gray' };
-}
-
-export const getFileNameFromUrl = (url: string): string => {
-    try {
-        return decodeURIComponent(url.substring(url.lastIndexOf('/') + 1));
-    } catch (error) {
-        console.error('Invalid URL:', error);
-        return '';
     }
 }
 

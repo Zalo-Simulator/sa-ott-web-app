@@ -6,24 +6,19 @@
   import { WebSocketClient } from '$lib/service/web-socket-client'
   import { GROUP_API, WEBSOCKET } from '$lib/api/API-Endpoint'
   import API from '$lib/api/Interceptor'
-  import { FRIEND_API, MEDIA_API } from '$lib/api/API-Endpoint'
+  import { FRIEND_API } from '$lib/api/API-Endpoint'
   import ReactionPicker from './ReactionPicker.svelte'
-  import {
-    formatDateTime,
-    isImage,
-    isVideo,
-    getFileIcon,
-    getFileNameFromUrl,
-    NameTracker
-  } from '$lib/utils/common'
+  import { formatDateTime, NameTracker } from '$lib/utils/common'
+  import { isImage, isVideo } from '$lib/service/file'
   import { MESSAGE_TYPE, stickers, GROUP_TYPE } from '$lib/constants/constants'
   import InView from '$lib/components/InView.svelte'
   import S3Image from '$lib/components/S3Image.svelte'
   import S3Video from '$lib/components/S3Video.svelte'
   import {
     getAllPrivateGroupIds,
-    cahchePrivateGroupId
+    cachePrivateGroupId
   } from '$lib/service/cache'
+  import FileIcon from '$lib/components/FileIcon.svelte'
 
   let friends: any = []
   let groups: any = []
@@ -119,7 +114,7 @@
         )
       ).data.id
       selectedPerson.group_id = group_id
-      cahchePrivateGroupId(selectedPerson.id, group_id)
+      cachePrivateGroupId(selectedPerson.id, group_id)
     }
 
     numMessage = 0
@@ -192,34 +187,25 @@
           tracker.remove(msg.person.full_name)
           peopleTyping = tracker.list()
           break
-        case MESSAGE_TYPE.UPDATE_ID:
-          for (let i = conversation.length - 1; i >= 0; i--) {
-            if (
-              !conversation[i].message_id &&
-              conversation[i].message == msg.message
-            ) {
-              conversation[i].message_id = msg.message_id
-              break
-            }
-          }
-          break
         case MESSAGE_TYPE.REACTION:
           let message = conversation.find(
             (item: any) => item.message_id == msg.message_id
           )
+          if (!message) {
+            message = conversation.find(
+              (item: any) => item.message == msg.message && !item.message_id
+            )
+          }
           if (message) {
             updateReaction(msg.reaction, message)
+            if (!message.message_id) {
+              message.message_id = msg.message_id
+            }
           }
           break
 
         default:
           conversation.push(msg)
-          wsClient.sendMessage({
-            message: msg.message,
-            message_id: msg.message_id,
-            group_id: msg.group_id,
-            message_type: MESSAGE_TYPE.UPDATE_ID
-          })
           break
       }
 
@@ -331,6 +317,7 @@
     wsClient.sendMessage({
       group_id: group_id,
       message_id: message.message_id,
+      message: message.message,
       message_type: MESSAGE_TYPE.REACTION,
       reaction: icon
     })
@@ -385,22 +372,6 @@
 
   const removeFile = () => {
     file = null
-  }
-
-  const downloadFile = async (s3key: string) => {
-    const link = document.createElement('a')
-    link.target = '_blank'
-    let url = (
-      await API.get(
-        MEDIA_API.download.replace('{s3_key}', encodeURIComponent(s3key)),
-        undefined,
-        '',
-        null,
-        true
-      )
-    ).data.url
-    link.href = url
-    link.click()
   }
 
   const scrollToBottom = async () => {
@@ -529,8 +500,13 @@
                 <div class="flex-grow-1 ml-4">
                   {friend.full_name}
                   <div class="small">
-                    <span class="fas fa-circle chat-online"></span>
-                    {friend.is_online ? 'Online' : 'Offline'}
+                    <span
+                      class="fas fa-circle"
+                      class:chat-online={friend.is_online}
+                      class:chat-offline={!friend.is_online}
+                    >
+                      {friend.is_online ? 'Online' : 'Offline'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -632,21 +608,11 @@
                       <S3Video s3Token={item.message} cssClass="chat-video"
                       ></S3Video>
                     {:else}
-                      <!-- svelte-ignore a11y_click_events_have_key_events -->
-                      <!-- svelte-ignore a11y_no_static_element_interactions -->
-                      <div
-                        class="attachment"
-                        on:click={() => downloadFile(item.message)}
-                      >
-                        <span style="color: {getFileIcon(item.message).color}"
-                          ><svelte:component
-                            this={getFileIcon(item.message).icon}
-                            size="20"
-                          /></span
-                        >
-
-                        {getFileNameFromUrl(item.message)}
-                      </div>
+                      <FileIcon
+                        s3key={item.message}
+                        isDownloadable={true}
+                        size={25}
+                      ></FileIcon>
                     {/if}
                     <div class="text-muted small text-nowrap mt-2">
                       {formatDateTime(item.time)}
@@ -724,7 +690,7 @@
                 />
                 {#if file}
                   <div class="file-preview">
-                    📎 {file.name}
+                    <FileIcon s3key={file.name}></FileIcon>
                     <button class="remove-button" on:click={removeFile}
                       >×</button
                     >
@@ -745,14 +711,6 @@
 </main>
 
 <style>
-  .chat-online {
-    color: #34ce57;
-  }
-
-  .chat-offline {
-    color: #e4606d;
-  }
-
   .chat-messages {
     display: flex;
     flex-direction: column;
@@ -925,18 +883,6 @@
     width: 100%;
     border-radius: 5px;
     width: 200px;
-  }
-  .attachment {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #007bff;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .attachment:hover {
-    text-decoration: underline;
   }
 
   .no-friend {

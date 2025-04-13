@@ -5,6 +5,7 @@ import { MEDIA_API } from '$lib/api/API-Endpoint'
 const dbInstance = IndexedDb.getInstance("common-cache-db", "data-cache");
 const PREFIX_S3_KEY = "S3KEY:"
 const PRIVATE_GROUP = "PRIVATEGROUPS"
+const UPLOADED_FILES = "UPLOADEDFILES"
 
 export const getCachedImageUrl = async (token: string) => {
     let res = await dbInstance.getValue(PREFIX_S3_KEY + token)
@@ -36,8 +37,22 @@ export const getAllPrivateGroupIds = async () => {
     return res;
 }
 
-export const cahchePrivateGroupId = async (userId: any, groupId: any) => {
+export const cachePrivateGroupId = async (userId: any, groupId: any) => {
     let groups = await getAllPrivateGroupIds();
     groups['user' + userId] = groupId;
     dbInstance.saveValue(PRIVATE_GROUP, groups);
+}
+
+export const getAllFiles = async () => {
+    let res = await dbInstance.getValue(UPLOADED_FILES)
+    if (!res) {
+        return [];
+    }
+    return res;
+}
+
+export const cacheFile = async (s3Key: string) => {
+    let files = await getAllFiles();
+    files.push(s3Key)
+    dbInstance.saveValue(UPLOADED_FILES, files);
 }

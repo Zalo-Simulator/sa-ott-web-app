@@ -2,6 +2,8 @@ import { IndexedDb } from "$lib/service/IndexedDb";
 const dbInstance = IndexedDb.getInstance("common-storage-db", "session");
 import { AUTH_API } from '$lib/api/API-Endpoint'
 import API from '$lib/api/Interceptor'
+import { pageHomeClass } from '$lib/service/store'
+import { goto } from '$app/navigation'
 
 const EXPIRATION_TIME = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
 
@@ -31,7 +33,7 @@ export const logOutUserSession = async () => {
 
 export const refeshUserSession = async () => {
     let oldSession = await dbInstance.getValue("session-login")
-    if (!oldSession?.cachedTime  || Date.now() - oldSession?.cachedTime > EXPIRATION_TIME) {
+    if (!!oldSession && (!oldSession?.cachedTime || Date.now() - oldSession?.cachedTime > EXPIRATION_TIME)) {
         let session = (
             await API.post(
                 AUTH_API.refreshToken,
@@ -61,4 +63,12 @@ export const updateUserSession = async (currentUser: any) => {
 export const getCurrentSessionUser = async () => {
     let userObject = await dbInstance.getValue("current-user")
     return userObject;
+}
+
+export const redirect = async () => {
+    if (await isUserLoggedIn()) {
+        goto('/chat').then(() => {
+            pageHomeClass.set('')
+        })
+    }
 }
