@@ -2,11 +2,15 @@
   import { getAllFiles } from '$lib/service/cache'
   import FileIcon from '$lib/components/FileIcon.svelte'
   import { downloadFile, getFileNameFromUrl } from '$lib/service/file'
+  import { getCurrentSessionUser } from '$lib/service/login'
+
+  let currentUser: any = {}
 
   import { onMount } from 'svelte'
   let files: any[] = []
   onMount(async () => {
-    files = (await getAllFiles()).map((item: any) => {
+    currentUser = await getCurrentSessionUser()
+    files = (await getAllFiles(currentUser.id)).map((item: any) => {
       return {
         name: getFileNameFromUrl(item),
         s3key: item

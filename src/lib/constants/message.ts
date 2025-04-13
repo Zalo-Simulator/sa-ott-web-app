@@ -5,6 +5,8 @@ export const MESSAGE = {
     ERROR_GROUP_NAME_NOT_VALID: 'Group name is mandatory',
     ERROR_MEMBERS_NOT_VALID: 'Must have at least 3 members in the group',
     ERROR_ACCOUNT_INVALID : 'Phone number or password are invalid',
+    ERROR_IMAGE_PROFILE : 'File must be a image',
+    
     
     
     SUCCESS_CHANGE_PASSWORD : 'Your password has been changed successfully!',

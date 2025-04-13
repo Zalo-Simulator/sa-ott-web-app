@@ -43,16 +43,16 @@ export const cachePrivateGroupId = async (userId: any, groupId: any) => {
     dbInstance.saveValue(PRIVATE_GROUP, groups);
 }
 
-export const getAllFiles = async () => {
-    let res = await dbInstance.getValue(UPLOADED_FILES)
+export const getAllFiles = async (userId: any) => {
+    let res = await dbInstance.getValue(UPLOADED_FILES + userId)
     if (!res) {
         return [];
     }
     return res;
 }
 
-export const cacheFile = async (s3Key: string) => {
-    let files = await getAllFiles();
+export const cacheFile = async (userId: any, s3Key: string) => {
+    let files = await getAllFiles(userId);
     files.push(s3Key)
-    dbInstance.saveValue(UPLOADED_FILES, files);
+    dbInstance.saveValue(UPLOADED_FILES + userId, files);
 }

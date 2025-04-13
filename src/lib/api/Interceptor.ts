@@ -98,7 +98,7 @@ const fileRequest = async (
         const responseJSON = await response.json();
 
         loader.hideLoader();
-        cacheFile(responseJSON.data.key)
+        cacheFile(currentUser.id, responseJSON.data.key)
         return responseJSON.data.key;
     } catch (error) {
         loader.hideLoader();

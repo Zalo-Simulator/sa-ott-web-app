@@ -7,6 +7,7 @@
   import { AUTH_API, USER_API } from '$lib/api/API-Endpoint'
   import { onMount } from 'svelte'
   import S3Image from '$lib/components/S3Image.svelte'
+  import { isImage } from '$lib/service/file'
 
   let currentUser: any = {}
   let selectedUser = {
@@ -23,10 +24,12 @@
 
   onMount(async () => {
     currentUser = await getCurrentSessionUser()
-    getUser()
   })
 
+  $: $page.params.id && getUser()
+
   const getUser = async () => {
+    userId = $page.params.id
     if (userId && userId != currentUser.id) {
       let user = await API.get(USER_API.getUser.replaceAll('{id}', userId))
       if (user.data) {
@@ -76,7 +79,9 @@
     return res
   }
 
+  let imageValid = true
   const uploadProfileImage = async (event: Event) => {
+    imageValid = true
     const target = event.target as HTMLInputElement
     const files = target.files
 
@@ -86,12 +91,16 @@
     }
 
     const file = files[0]
-    const s3Key = await API.fileRequest(file)
+    if (isImage(file.name)) {
+      const s3Key = await API.fileRequest(file)
 
-    selectedUser.avatar_url = s3Key
+      selectedUser.avatar_url = s3Key
 
-    //update to session & database
-    updateUser()
+      //update to session & database
+      updateUser()
+    } else {
+      imageValid = false
+    }
   }
 </script>
 
@@ -127,8 +136,12 @@
             <button
               class="btn btn-primary"
               type="button"
+              class:is-invalid={!imageValid}
               on:click={() => fileInput.click()}>Upload new image</button
             >
+            <div class="invalid-feedback">
+              {MESSAGE.ERROR_IMAGE_PROFILE}
+            </div>
             <input
               type="file"
               bind:this={fileInput}
