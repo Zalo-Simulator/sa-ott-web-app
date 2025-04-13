@@ -24,6 +24,10 @@
 
   onMount(async () => {
     currentUser = await getCurrentSessionUser()
+
+    if (!$page.params.id) {
+      getUser()
+    }
   })
 
   $: $page.params.id && getUser()
