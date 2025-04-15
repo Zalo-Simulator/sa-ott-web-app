@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { redirect, logInUserSession } from '$lib/service/login'
+  import { redirect, logInUserSession, getCurrentSessionUser } from '$lib/service/login'
   import { goto } from '$app/navigation'
   import Particles from '$lib/components/Particles.svelte'
-  import { pageHomeClass } from '$lib/service/store'
+  import { pageHomeClass, currentUser } from '$lib/service/store'
   import API from '$lib/api/Interceptor'
   import { AUTH_API } from '$lib/api/API-Endpoint'
   import { MESSAGE } from '$lib/constants/message'
@@ -19,7 +19,8 @@
     })
     if (res) {
       isValidLogin = true
-      logInUserSession(res.data, phoneNumber)
+      await logInUserSession(res.data, phoneNumber)
+      currentUser.set(await getCurrentSessionUser())
       goto('/chat').then(() => {
         pageHomeClass.set('')
       })

@@ -9,6 +9,7 @@
   export let defaultImage: any = UserImage
 
   let imageUrl = ''
+  let numError = 0
 
   $: s3Token && getImageUrl()
 
@@ -17,6 +18,11 @@
   }
 
   const handleError = async () => {
+    numError++
+    if (numError > 1) {
+      imageUrl = defaultImage
+      return
+    }
     try {
       imageUrl = (
         await API.get(

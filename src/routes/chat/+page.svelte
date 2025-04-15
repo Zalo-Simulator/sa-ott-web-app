@@ -402,6 +402,8 @@
       showStickers = false
       wsClient.sendMessage(msg)
       conversation.push(msg)
+      conversation = conversation
+      setTimeout(scrollToBottom, 100)
     }
   }
 

@@ -36,17 +36,8 @@
     padding-top: 10px;
   }
 
-  :global(.groups__img .avatar-img),
-  .groups__img .avatar-img {
-    display: inline-block;
-    margin: -7px -5px 4px 0;
-    vertical-align: top;
-    border-radius: 50%;
-  }
-
   .avatar-char,
-  .avatar-img,
-  :global(.avatar-img) {
+  .avatar-img {
     border-radius: 2px;
     width: 30px;
     height: 30px;

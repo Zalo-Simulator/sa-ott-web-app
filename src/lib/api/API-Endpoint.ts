@@ -1,8 +1,6 @@
 const URL_PREFIX = "http://52.23.164.179:8000"; //import.meta.env.VITE_API_URL // 
 const WEBSOCKET_PREFIX = "ws://52.23.164.179:8000/ws/users";// import.meta.env.VITE_WEBSOCKET_URL 
 
-console.log(import.meta.env.VITE_API_URL);
-
 export const AUTH_API = {
     login: `${URL_PREFIX}/auth/login`,
     register: `${URL_PREFIX}/auth/register`,

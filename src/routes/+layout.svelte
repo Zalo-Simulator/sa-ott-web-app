@@ -9,7 +9,7 @@
   import { goto } from '$app/navigation'
   import { onMount } from 'svelte'
   import { page } from '$app/stores'
-  import { pageHomeClass } from '$lib/service/store'
+  import { pageHomeClass, currentUser } from '$lib/service/store'
   import Loader from '$lib/components/loader/Loader.svelte'
   import { SvelteToast } from '@zerodevx/svelte-toast'
   import ConfirmationDialog from '$lib/components/ConfirmationDialog.svelte'
@@ -19,7 +19,6 @@
   import S3Image from '$lib/components/S3Image.svelte'
 
   let showDialog = false
-  let currentUser: any = {}
 
   const showConfirmationlogOut = () => {
     showDialog = true
@@ -34,10 +33,6 @@
     })
   }
 
-  const viewProfile = (user: any) => {
-    goto(`/profile/${user.id}`).then(() => {})
-  }
-
   onMount(async () => {
     if (
       !(await isUserLoggedIn()) &&
@@ -49,7 +44,7 @@
         pageHomeClass.set('disable-menu')
       })
     }
-    currentUser = await getCurrentSessionUser()
+    currentUser.set(await getCurrentSessionUser())
     let sidebar = document.querySelector('.sidebar')
     let closeBtn = document.querySelector('#btn')
 
@@ -128,16 +123,16 @@
       <div
         class="profile-details"
         on:click={() => {
-          viewProfile(currentUser)
+          goto(`/profile`)
         }}
       >
         <S3Image
-          s3Token={currentUser?.avatar_url}
+          s3Token={$currentUser?.avatar_url}
           cssClass=" "
           defaultImage={UserImage}
         ></S3Image>
         <div class="name_job">
-          <div class="name">{currentUser?.full_name}</div>
+          <div class="name">{$currentUser?.full_name}</div>
         </div>
       </div>
       <!-- svelte-ignore a11y_click_events_have_key_events -->
