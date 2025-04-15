@@ -21,11 +21,13 @@
   const MIN_NUM_MEMBERS = 3
   let currentUser: any = {}
   let groupId = $page.params.id
-  let selectedGroup = {
+  const emptyGroup = {
     id: 0,
     name: '',
+    created_by: 0,
     members: []
   }
+  let selectedGroup = { ...emptyGroup }
 
   onMount(async () => {
     currentUser = await getCurrentSessionUser()
@@ -51,6 +53,8 @@
         member.full_name = member.full_name || member.name
       })
     })
+
+    selectedGroup = { ...emptyGroup }
   }
 
   const getListFriends = async () => {
@@ -76,6 +80,8 @@
 
   $: tabIndex == 0 && getlistGroups()
   $: tabIndex == 1 && getListFriends()
+  $: allowEdit =
+    selectedGroup.created_by == currentUser.id || !selectedGroup.created_by
 
   const addUser = (user: any) => {
     selectedGroup.members.push(user)
@@ -219,6 +225,7 @@
               aria-describedby="inputGroup-sizing-default"
               bind:value={searchText}
               on:change={filterListFriends}
+              disabled={!allowEdit}
             />
           </div>
         </div>
@@ -227,9 +234,9 @@
           <div class="col-sm-12">
             <ListUsers
               {users}
-              buttons={[
-                { label: 'Add', style: 'btn-primary', handler: addUser }
-              ]}
+              buttons={allowEdit
+                ? [{ label: 'Add', style: 'btn-primary', handler: addUser }]
+                : []}
               emptyText="No friend found"
             ></ListUsers>
           </div>
@@ -247,6 +254,7 @@
               placeholder="Enter group name"
               bind:value={selectedGroup.name}
               class:is-invalid={!selectedGroup.name}
+              disabled={!allowEdit}
             />
             <div class="invalid-feedback">
               {MESSAGE.ERROR_GROUP_NAME_NOT_VALID}
@@ -268,22 +276,30 @@
             <ListUsers
               users={selectedGroup.members}
               excludeActionItems={[currentUser.id]}
-              buttons={[
-                { label: 'Remove', style: 'btn-warning', handler: removeUser }
-              ]}
+              buttons={allowEdit
+                ? [
+                    {
+                      label: 'Remove',
+                      style: 'btn-warning',
+                      handler: removeUser
+                    }
+                  ]
+                : []}
             ></ListUsers>
           </div>
         </div>
         <div class="row">
           <div class="col-sm-12">
             <div class="d-flex justify-content-end col-sm-12">
-              <button
-                class="btn btn-primary"
-                disabled={!validationGroup}
-                on:click={updateGroup}
-              >
-                {selectedGroup.id ? 'Update Group' : 'Create Group'}
-              </button>
+              {#if allowEdit}
+                <button
+                  class="btn btn-primary"
+                  disabled={!validationGroup}
+                  on:click={updateGroup}
+                >
+                  {selectedGroup.id ? 'Update Group' : 'Create Group'}
+                </button>
+              {/if}
             </div>
           </div>
         </div>

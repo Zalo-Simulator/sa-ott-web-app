@@ -10,7 +10,7 @@
   })
 </script>
 
-<div class="groups__img">
+<div class="groups-img-small">
   {#each users as user, index}
     {#if index < 4}
       {#if user.avatar_url}
@@ -27,31 +27,3 @@
   {/each}
 </div>
 
-<style>
-  .groups__img {
-    width: 60px;
-    height: 60px;
-    display: inline-block;
-    border-radius: 50%;
-    padding-top: 10px;
-  }
-
-  .avatar-char,
-  .avatar-img {
-    border-radius: 2px;
-    width: 30px;
-    height: 30px;
-  }
-
-  .avatar-char {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.08);
-  }
-
-  .avatar-char {
-    line-height: 30px;
-    font-size: 14px;
-    text-align: center;
-    font-style: normal;
-  }
-</style>

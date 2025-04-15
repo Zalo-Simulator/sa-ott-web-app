@@ -310,15 +310,30 @@ button:disabled {
   color: #98a6ad;
 }
 
-.groups__img .avatar-img {
+.groups-img-small {
+  width: 60px;
+  height: 60px;
+  display: inline-block;
+  border-radius: 50%;
+  padding-top: 10px;
+}
+
+.groups-img-small .avatar-char {
+  line-height: 30px;
+  font-size: 14px;
+  text-align: center;
+  font-style: normal;
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.08);
+  width: 30px;
+  height: 30px;
+}
+
+.groups-img-small .avatar-img {
   display: inline-block;
   margin: -7px -5px 4px 0;
   vertical-align: top;
   border-radius: 50%;
-}
-
-.avatar-img {
-  border-radius: 2px;
   width: 30px;
   height: 30px;
 }
