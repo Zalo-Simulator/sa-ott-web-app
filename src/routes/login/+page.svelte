@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { redirect, logInUserSession, getCurrentSessionUser } from '$lib/service/login'
+  import {
+    redirect,
+    logInUserSession,
+    getCurrentSessionUser
+  } from '$lib/service/login'
   import { goto } from '$app/navigation'
   import Particles from '$lib/components/Particles.svelte'
   import { pageHomeClass, currentUser } from '$lib/service/store'
@@ -56,7 +60,7 @@
 
 <div id="login-container" class="container">
   <div class="row justify-content-center">
-    <div class="col-md-6">
+    <div class="col-xl-6 col-lg-8 col-md-10 col-sm-12">
       <div class="card-group mb-0">
         <div class="card p-4">
           <div class="card-body">
@@ -100,10 +104,7 @@
             </div>
           </div>
         </div>
-        <div
-          class="box-card text-white bg-primary py-5 d-md-down-none"
-          style="width:44%"
-        >
+        <div class="box-card text-white bg-primary py-5 d-md-down-none col-md-6">
           <div class="card-body text-center">
             <div>
               <h2>Sign up</h2>
@@ -139,30 +140,6 @@
     padding-left: 15px;
     width: 100%;
     max-width: 100% !important;
-  }
-
-  @media (min-width: 576px) {
-    .container {
-      max-width: 540px;
-    }
-  }
-
-  @media (min-width: 768px) {
-    .container {
-      max-width: 720px;
-    }
-  }
-
-  @media (min-width: 992px) {
-    .container {
-      max-width: 960px;
-    }
-  }
-
-  @media (min-width: 1200px) {
-    .container {
-      max-width: 1140px;
-    }
   }
 
   :global(.card-columns .card) {
@@ -204,7 +181,6 @@
 
   .box-card {
     border: 1px solid white;
-    border-left: none;
     background-color: transparent;
   }
 

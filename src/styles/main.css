@@ -264,6 +264,7 @@
 
 .home-section.disable-menu {
   left: 0px !important;
+  width: 100%;
 }
 
 .sidebar.open~.home-section {

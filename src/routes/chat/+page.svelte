@@ -463,8 +463,8 @@
   <div class="p-0">
     <div class="card">
       <div class="row g-0">
-        <div id="left-content" class="col-12 col-lg-5 col-xl-3 border-right">
-          <div class="px-4 d-none d-md-block">
+        <div id="left-content" class="col-3 col-sm-3 col-md-5 col-lg-4 col-xl-3 border-right">
+          <div class="px-4 d-md-block">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
                 <input
@@ -499,7 +499,7 @@
               {/if}
               <div class="d-flex align-items-start">
                 <Avatar user={friend}></Avatar>
-                <div class="flex-grow-1 ml-4">
+                <div class="flex-grow-1 ml-4 sm-hidden">
                   {friend.full_name}
                   <div class="small">
                     <span
@@ -531,7 +531,7 @@
               {/if}
               <div class="d-flex align-items-start">
                 <GroupAvatar users={group.members}></GroupAvatar>
-                <div class="flex-grow-1 ml-2">
+                <div class="flex-grow-1 ml-2 sm-hidden">
                   {group.name}
                   <div class="small">
                     <span class="fas fa-circle chat-online"></span>
@@ -543,7 +543,7 @@
           {/each}
           <hr class="d-block d-lg-none mt-1 mb-0" />
         </div>
-        <div id="right-content" class="col-12 col-lg-7 col-xl-9">
+        <div id="right-content" class="col-9 col-sm-9 col-md-7 col-lg-8 col-xl-9">
           <div class="py-2 px-4 border-bottom d-none d-lg-block">
             <div class="d-flex align-items-center py-1">
               <div class="position-relative">
@@ -926,4 +926,14 @@
     height: 100%;
     object-fit: cover;
   }
+
+  @media (max-width: 750px) {
+  .sm-hidden {
+    display: none;
+  }
+
+  .align-items-start {
+    cursor: pointer;
+  }
+}
 </style>
