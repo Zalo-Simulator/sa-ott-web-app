@@ -37,6 +37,7 @@ export const GROUP_API = {
 
 export const MEDIA_API = {
     upload: `${URL_PREFIX}/medias/upload?is_public=true&bucket=zalo-private-test`,
+    getAllFiles: `${URL_PREFIX}/medias/me?bucket=zalo-private-test`,
     download: `${URL_PREFIX}/medias/get-public-file-url?s3_key={s3_key}&is_public=true&bucket=zalo-private-test`
 }
 

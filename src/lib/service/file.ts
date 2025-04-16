@@ -30,18 +30,22 @@ export const getFileNameFromUrl = (url: string): string => {
     }
 }
 
-export const downloadFile = async (s3key: string) => {
+export const downloadFile = async (s3key: string, isS3key = true) => {
     const link = document.createElement('a')
     link.target = '_blank'
-    let url = (
-        await API.get(
-            MEDIA_API.download.replace('{s3_key}', encodeURIComponent(s3key)),
-            undefined,
-            '',
-            null,
-            true
-        )
-    ).data.url
+    let url = s3key
+    if (isS3key) {
+        let url = (
+            await API.get(
+                MEDIA_API.download.replace('{s3_key}', encodeURIComponent(s3key)),
+                undefined,
+                '',
+                null,
+                true
+            )
+        ).data.url
+    }
+
     link.href = url
     link.click()
 }

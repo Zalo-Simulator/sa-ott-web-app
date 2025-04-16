@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { getAllFiles } from '$lib/service/cache'
   import FileIcon from '$lib/components/FileIcon.svelte'
   import { downloadFile, getFileNameFromUrl } from '$lib/service/file'
   import { getCurrentSessionUser } from '$lib/service/login'
+  import API from '$lib/api/Interceptor'
+  import { MEDIA_API } from '$lib/api/API-Endpoint'
 
   let currentUser: any = {}
 
@@ -10,10 +11,11 @@
   let files: any[] = []
   onMount(async () => {
     currentUser = await getCurrentSessionUser()
-    files = (await getAllFiles(currentUser.id)).map((item: any) => {
+    files = (await API.get(MEDIA_API.getAllFiles)).data.urls
+    files = files.map((item: any) => {
       return {
-        name: getFileNameFromUrl(item),
-        s3key: item
+        name: getFileNameFromUrl(item.url),
+        url: item.url
       }
     })
   })
@@ -49,11 +51,11 @@
             <span class="no-file"> You don't have any uploaded files!! </span>
           {/if}
           {#each files as file}
-            <div class="col-lg-3 col-xl-2">
+            <div class="col-lg-3 col-xl-2 col-md-4 col-sm-6">
               <div class="file-man-box">
                 <div class="file-img-box">
                   <FileIcon
-                    s3key={file.s3key}
+                    s3key={file.url}
                     isShowName={false}
                     size={64}
                     isShowImage={true}
@@ -64,7 +66,7 @@
                   href="#"
                   class="file-download"
                   on:click={() => {
-                    downloadFile(file.s3key)
+                    downloadFile(file.url, false)
                   }}><i class="fa fa-download"></i></a
                 >
                 <div class="file-man-title">

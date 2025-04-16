@@ -22,7 +22,8 @@ export const logInUserSession = async (data: any, phone: string) => {
         id: data.id,
         full_name: data.full_name,
         avatar_url: data.avatar_url,
-        phone: phone
+        phone: phone,
+        is_online: true
     })
 }
 

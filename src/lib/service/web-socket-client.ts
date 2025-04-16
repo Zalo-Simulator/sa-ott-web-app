@@ -1,8 +1,8 @@
 export class WebSocketClient {
     private socket: WebSocket;
+    private messageHandler?: (data: any) => void;
 
-    constructor(private url: string,
-        private messageHandler?: (data: any) => void) {
+    constructor(private url: string) {
         this.socket = new WebSocket(this.url);
         this.initialize();
     }
@@ -25,6 +25,11 @@ export class WebSocketClient {
         this.socket.addEventListener('close', (event) => {
             console.log(`WebSocket connection closed:`, event);
         });
+    }
+
+    // Set handler after instance is created
+    setMessageHandler(handler: (data: any) => void) {
+        this.messageHandler = handler;
     }
 
     sendMessage(message: any) {

@@ -1,9 +1,8 @@
 <script lang="ts">
   import { getCurrentSessionUser } from '$lib/service/login'
-  import { onMount, onDestroy } from 'svelte'
+  import { onMount } from 'svelte'
   import Avatar from '$lib/components/Avatar.svelte'
   import GroupAvatar from '$lib/components/GroupAvatar.svelte'
-  import { WebSocketClient } from '$lib/service/web-socket-client'
   import { GROUP_API, WEBSOCKET } from '$lib/api/API-Endpoint'
   import API from '$lib/api/Interceptor'
   import { FRIEND_API } from '$lib/api/API-Endpoint'
@@ -19,6 +18,7 @@
     cachePrivateGroupId
   } from '$lib/service/cache'
   import FileIcon from '$lib/components/FileIcon.svelte'
+  import { wsClient } from '$lib/service/store'
 
   let friends: any = []
   let groups: any = []
@@ -29,7 +29,6 @@
   let conversation: any = []
   let currentUser: any = {}
   let searchText = ''
-  let wsClient: any
   let message = ''
   let group_id = ''
   let container: HTMLDivElement
@@ -39,20 +38,17 @@
   const tracker = new NameTracker()
   let peopleTyping = ''
 
+  $: $wsClient &&
+    (() => {
+      $wsClient.setMessageHandler(receiveMessage)
+    })
+
   onMount(async () => {
     currentUser = await getCurrentSessionUser()
+
     getFriends()
 
     getlistGroups()
-
-    wsClient = new WebSocketClient(
-      WEBSOCKET.connect.replace('{id}', currentUser.id),
-      receiveMessage
-    )
-  })
-
-  onDestroy(async () => {
-    wsClient.closeConnection()
   })
 
   const getFriends = async () => {
@@ -263,7 +259,7 @@
         }
       }
 
-      wsClient.sendMessage(msg)
+      $wsClient.sendMessage(msg)
       conversation.push(msg)
 
       // Upload or send file...
@@ -285,7 +281,7 @@
           avatar_url: currentUser.avatar_url
         }
       }
-      wsClient.sendMessage(msg)
+      $wsClient.sendMessage(msg)
       conversation.push(msg)
 
       message = ''
@@ -314,7 +310,7 @@
   }
 
   const react = (icon: string, message: any) => {
-    wsClient.sendMessage({
+    $wsClient.sendMessage({
       group_id: group_id,
       message_id: message.message_id,
       message: message.message,
@@ -400,7 +396,7 @@
       }
 
       showStickers = false
-      wsClient.sendMessage(msg)
+      $wsClient.sendMessage(msg)
       conversation.push(msg)
       conversation = conversation
       setTimeout(scrollToBottom, 100)
@@ -427,7 +423,7 @@
         full_name: currentUser.full_name
       }
     }
-    wsClient.sendMessage(msg)
+    $wsClient.sendMessage(msg)
 
     // Reset timer if user is still typing
     if (typingTimeout) clearTimeout(typingTimeout)
@@ -441,7 +437,7 @@
           full_name: currentUser.full_name
         }
       }
-      wsClient.sendMessage(msg)
+      $wsClient.sendMessage(msg)
     }, 3000)
   }
 
@@ -463,7 +459,10 @@
   <div class="p-0">
     <div class="card">
       <div class="row g-0">
-        <div id="left-content" class="col-3 col-sm-3 col-md-5 col-lg-4 col-xl-3 border-right">
+        <div
+          id="left-content"
+          class="col-3 col-sm-3 col-md-5 col-lg-4 col-xl-3 border-right"
+        >
           <div class="px-4 d-md-block">
             <div class="d-flex align-items-center">
               <div class="flex-grow-1">
@@ -543,7 +542,10 @@
           {/each}
           <hr class="d-block d-lg-none mt-1 mb-0" />
         </div>
-        <div id="right-content" class="col-9 col-sm-9 col-md-7 col-lg-8 col-xl-9">
+        <div
+          id="right-content"
+          class="col-9 col-sm-9 col-md-7 col-lg-8 col-xl-9"
+        >
           <div class="py-2 px-4 border-bottom d-none d-lg-block">
             <div class="d-flex align-items-center py-1">
               <div class="position-relative">
@@ -928,12 +930,12 @@
   }
 
   @media (max-width: 750px) {
-  .sm-hidden {
-    display: none;
-  }
+    .sm-hidden {
+      display: none;
+    }
 
-  .align-items-start {
-    cursor: pointer;
+    .align-items-start {
+      cursor: pointer;
+    }
   }
-}
 </style>

@@ -7,9 +7,9 @@
     refeshUserSession
   } from '$lib/service/login'
   import { goto } from '$app/navigation'
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { page } from '$app/stores'
-  import { pageHomeClass, currentUser } from '$lib/service/store'
+  import { pageHomeClass, currentUser, wsClient } from '$lib/service/store'
   import Loader from '$lib/components/loader/Loader.svelte'
   import { SvelteToast } from '@zerodevx/svelte-toast'
   import ConfirmationDialog from '$lib/components/ConfirmationDialog.svelte'
@@ -17,6 +17,8 @@
   import API from '$lib/api/Interceptor'
   import { AUTH_API } from '$lib/api/API-Endpoint'
   import S3Image from '$lib/components/S3Image.svelte'
+  import { WebSocketClient } from '$lib/service/web-socket-client'
+  import { WEBSOCKET } from '$lib/api/API-Endpoint'
 
   let showDialog = false
 
@@ -45,6 +47,10 @@
       })
     }
     currentUser.set(await getCurrentSessionUser())
+    wsClient.set(
+      new WebSocketClient(WEBSOCKET.connect.replace('{id}', $currentUser.id))
+    )
+    
     let sidebar = document.querySelector('.sidebar')
     let closeBtn = document.querySelector('#btn')
 
@@ -61,8 +67,11 @@
         closeBtn?.classList.replace('bx-menu-alt-right', 'bx-menu') //replacing the iocns class
       }
     }
-
     refeshUserSession()
+  })
+
+  onDestroy(async () => {
+    $wsClient.closeConnection()
   })
 </script>
 
