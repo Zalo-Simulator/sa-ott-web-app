@@ -3,6 +3,7 @@
   import { MEDIA_API } from '$lib/api/API-Endpoint'
   import API from '$lib/api/Interceptor'
   import UserImage from '../../imgs/User Frame Black.png'
+  import { checkUrlAccessible } from '$lib/service/file'
 
   export let s3Token: string
   export let cssClass: string = 'default-image'
@@ -35,6 +36,10 @@
       ).data.url
       if (imageUrl) {
         cacheImageUrl(s3Token, imageUrl)
+      }
+
+      if (!(await checkUrlAccessible(imageUrl))) {
+        imageUrl = defaultImage
       }
     } catch (error) {
       imageUrl = defaultImage

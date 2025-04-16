@@ -1,6 +1,16 @@
 import API from '$lib/api/Interceptor'
 import { MEDIA_API } from '$lib/api/API-Endpoint'
 
+export const checkUrlAccessible = async(url: string): Promise<boolean> => {
+    try {
+        const res = await fetch(url, { method: 'HEAD' });
+        return res.ok;
+    } catch (err) {
+        console.error('Error checking URL:', err);
+        return false;
+    }
+}
+
 export const isImage = (input: string | File): boolean => {
     if (typeof input === 'string') {
         const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg', '.tiff'];
@@ -49,3 +59,4 @@ export const downloadFile = async (s3key: string, isS3key = true) => {
     link.href = url
     link.click()
 }
+
