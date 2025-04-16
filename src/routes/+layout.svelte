@@ -4,7 +4,8 @@
     isUserLoggedIn,
     logOutUserSession,
     getCurrentSessionUser,
-    refeshUserSession
+    refeshUserSession,
+    getUserSession
   } from '$lib/service/login'
   import { goto } from '$app/navigation'
   import { onMount, onDestroy } from 'svelte'
@@ -24,6 +25,29 @@
 
   const showConfirmationlogOut = () => {
     showDialog = true
+  }
+
+  let hasClickEvent = false
+
+  const showLeftMenu = () => {
+    let sidebar = document.querySelector('.sidebar')
+    let closeBtn = document.querySelector('#btn')
+
+    if (!hasClickEvent && closeBtn) {
+      closeBtn?.addEventListener('click', () => {
+        sidebar?.classList.toggle('open')
+        menuBtnChange() //calling the function(optional)
+        hasClickEvent = true
+      })
+    }
+    // following are the code to change sidebar button(optional)
+    function menuBtnChange() {
+      if (sidebar?.classList.contains('open')) {
+        closeBtn?.classList.replace('bx-menu', 'bx-menu-alt-right') //replacing the iocns class
+      } else {
+        closeBtn?.classList.replace('bx-menu-alt-right', 'bx-menu') //replacing the iocns class
+      }
+    }
   }
 
   const logOut = async () => {
@@ -46,28 +70,24 @@
         pageHomeClass.set('disable-menu')
       })
     }
-    currentUser.set(await getCurrentSessionUser())
-    wsClient.set(
-      new WebSocketClient(WEBSOCKET.connect.replace('{id}', $currentUser.id))
-    )
-    
-    let sidebar = document.querySelector('.sidebar')
-    let closeBtn = document.querySelector('#btn')
 
-    closeBtn?.addEventListener('click', () => {
-      sidebar?.classList.toggle('open')
-      menuBtnChange() //calling the function(optional)
-    })
-
-    // following are the code to change sidebar button(optional)
-    function menuBtnChange() {
-      if (sidebar?.classList.contains('open')) {
-        closeBtn?.classList.replace('bx-menu', 'bx-menu-alt-right') //replacing the iocns class
-      } else {
-        closeBtn?.classList.replace('bx-menu-alt-right', 'bx-menu') //replacing the iocns class
-      }
+    if (await isUserLoggedIn()) {
+      currentUser.set(await getCurrentSessionUser())
+      const session: any = await getUserSession()
+      wsClient.set(
+        new WebSocketClient(
+          WEBSOCKET.connect.replace('{id}', $currentUser?.id) +
+            `?token=${session.access_token}`
+        )
+      )
+      refeshUserSession()
     }
-    refeshUserSession()
+
+    pageHomeClass.subscribe((val) => {
+      if (val == '') {
+        showLeftMenu()
+      }
+    })
   })
 
   onDestroy(async () => {

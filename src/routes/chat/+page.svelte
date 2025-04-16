@@ -38,12 +38,13 @@
   const tracker = new NameTracker()
   let peopleTyping = ''
 
-  $: $wsClient &&
-    (() => {
-      $wsClient.setMessageHandler(receiveMessage)
+  onMount(async () => {
+    wsClient.subscribe((socket) => {
+      if (socket) {
+        socket.setMessageHandler(receiveMessage)
+      }
     })
 
-  onMount(async () => {
     currentUser = await getCurrentSessionUser()
 
     getFriends()

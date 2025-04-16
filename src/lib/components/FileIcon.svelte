@@ -57,7 +57,7 @@
   {#if type == 'icon'}
     <img src={icon} alt="" style="width: {size}px;" />
   {:else if type == 'image'}
-    <S3Image s3Token={s3key}></S3Image>
+    <S3Image s3Token={s3key} isFullUrl={true}></S3Image>
   {/if}
   {#if isShowName}
     {getFileNameFromUrl(s3key)}

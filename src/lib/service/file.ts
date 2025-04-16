@@ -1,7 +1,7 @@
 import API from '$lib/api/Interceptor'
 import { MEDIA_API } from '$lib/api/API-Endpoint'
 
-export const checkUrlAccessible = async(url: string): Promise<boolean> => {
+export const checkUrlAccessible = async (url: string): Promise<boolean> => {
     try {
         const res = await fetch(url, { method: 'HEAD' });
         return res.ok;
@@ -45,7 +45,7 @@ export const downloadFile = async (s3key: string, isS3key = true) => {
     link.target = '_blank'
     let url = s3key
     if (isS3key) {
-        let url = (
+        url = (
             await API.get(
                 MEDIA_API.download.replace('{s3_key}', encodeURIComponent(s3key)),
                 undefined,

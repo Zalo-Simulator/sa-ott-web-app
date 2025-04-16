@@ -267,7 +267,7 @@
   width: 100%;
 }
 
-.sidebar.open~.home-section {
+.sidebar.open:not(:has(+ .disable-menu))~.home-section {
   left: 250px;
   width: calc(100% - 250px);
 }

@@ -8,6 +8,7 @@
   export let s3Token: string
   export let cssClass: string = 'default-image'
   export let defaultImage: any = UserImage
+  export let isFullUrl = false
 
   let imageUrl = ''
   let numError = 0
@@ -15,12 +16,16 @@
   $: s3Token && getImageUrl()
 
   const getImageUrl = async () => {
-    imageUrl = await getCachedImageUrl(s3Token)
+    if (isFullUrl) {
+      imageUrl = s3Token
+    } else {
+      imageUrl = await getCachedImageUrl(s3Token)
+    }
   }
 
   const handleError = async () => {
     numError++
-    if (numError > 1) {
+    if (numError > 1 || isFullUrl) {
       imageUrl = defaultImage
       return
     }
