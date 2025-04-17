@@ -72,30 +72,28 @@
     }
 
     if (await isUserLoggedIn()) {
-      currentUser.set(await getCurrentSessionUser())
-      const session: any = await getUserSession()
-      await wsClient.set(
-        new WebSocketClient(
-          WEBSOCKET.connect.replace('{id}', $currentUser?.id) +
-            `?token=${session.access_token}`
-        )
-      )
+      await currentUser.set(await getCurrentSessionUser())
       refeshUserSession()
     }
+
+    currentUser.subscribe(async (user) => {
+      if (user?.id) {
+        if ($wsClient) {
+          await $wsClient.closeConnection()
+        }
+        const session: any = await getUserSession()
+        await wsClient.set(
+          new WebSocketClient(
+            WEBSOCKET.connect.replace('{id}', user.id) +
+              `?token=${session.access_token}`
+          )
+        )
+      }
+    })
 
     pageHomeClass.subscribe(async (val) => {
       if (val == '') {
         showLeftMenu()
-
-        if (!$wsClient) {
-          const session: any = await getUserSession()
-          wsClient.set(
-            new WebSocketClient(
-              WEBSOCKET.connect.replace('{id}', $currentUser?.id) +
-                `?token=${session.access_token}`
-            )
-          )
-        }
       }
     })
   })

@@ -13,6 +13,7 @@ export class WebSocketClient {
         });
 
         this.socket.addEventListener('message', (event) => {
+            console.log('Message from server:', event.data)
             if (this.messageHandler) {
                 this.messageHandler(event.data);
             }

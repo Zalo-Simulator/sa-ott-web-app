@@ -39,16 +39,21 @@
   let peopleTyping = ''
 
   onMount(async () => {
-    wsClient.subscribe((socket) => {
-      if (socket) {
-        socket.setMessageHandler(receiveMessage)
-      }
-    })
     currentUser = await getCurrentSessionUser()
 
     getFriends()
 
     getlistGroups()
+
+    wsClient.subscribe((socket) => {
+      if (socket) {
+        socket.setMessageHandler(receiveMessage)
+      }
+    })
+
+    if ($wsClient) {
+      $wsClient.setMessageHandler(receiveMessage)
+    }
   })
 
   const getFriends = async () => {
@@ -174,7 +179,7 @@
   }
 
   const receiveMessage = async (data: any) => {
-    console.log('Message from server:', data)
+    console.log('on receiveMessage')
     const msg = JSON.parse(data)
 
     if (msg.group_id == group_id) {
