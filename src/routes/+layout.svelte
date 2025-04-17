@@ -22,6 +22,7 @@
   import { WEBSOCKET } from '$lib/api/API-Endpoint'
 
   let showDialog = false
+  let currentWebSocketId: any
 
   const showConfirmationlogOut = () => {
     showDialog = true
@@ -53,6 +54,10 @@
   const logOut = async () => {
     await API.post(AUTH_API.logout, {})
     logOutUserSession()
+    if ($wsClient) {
+      await $wsClient.closeConnection()
+    }
+    currentWebSocketId = ''
     goto('/login').then(() => {
       showDialog = false
       pageHomeClass.set('disable-menu')
@@ -77,7 +82,7 @@
     }
 
     currentUser.subscribe(async (user) => {
-      if (user?.id) {
+      if (user?.id && currentWebSocketId != user?.id) {
         if ($wsClient) {
           await $wsClient.closeConnection()
         }
@@ -88,6 +93,7 @@
               `?token=${session.access_token}`
           )
         )
+        currentWebSocketId = user.id
       }
     })
 
