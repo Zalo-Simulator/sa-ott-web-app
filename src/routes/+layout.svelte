@@ -74,7 +74,7 @@
     if (await isUserLoggedIn()) {
       currentUser.set(await getCurrentSessionUser())
       const session: any = await getUserSession()
-      wsClient.set(
+      await wsClient.set(
         new WebSocketClient(
           WEBSOCKET.connect.replace('{id}', $currentUser?.id) +
             `?token=${session.access_token}`

@@ -44,7 +44,6 @@
         socket.setMessageHandler(receiveMessage)
       }
     })
-
     currentUser = await getCurrentSessionUser()
 
     getFriends()
@@ -292,6 +291,7 @@
       message = ''
     }
 
+    showStickers = false
     conversation = conversation
     setTimeout(scrollToBottom, 100)
   }
