@@ -162,7 +162,10 @@
 <div class="content__inner">
   <Tab
     bind:tabIndex
-    tabs={['Total Groups: ' + groups.length, 'Create/Edit a Group']}
+    tabs={[
+      { name: 'Total Groups: ' + groups.length },
+      { name: 'Create/Edit a Group' }
+    ]}
   ></Tab>
   {#if tabIndex == 0}
     <div class="row groups">
@@ -212,37 +215,38 @@
   {/if}
   {#if tabIndex == 1}
     <div class="row">
-      <div class="col-sm-12 col-md-12 col-lg-6">
-        <div class="row padding-box">
-          <div class="input-group mb-3">
-            <span class="input-group-text" id="inputGroup-sizing-default"
-              >Search</span
-            >
-            <input
-              type="text"
-              class="form-control"
-              aria-label="Sizing example input"
-              aria-describedby="inputGroup-sizing-default"
-              bind:value={searchText}
-              on:change={filterListFriends}
-              disabled={!allowEdit}
-            />
+      {#if allowEdit}
+        <div class="col-sm-12 col-md-12 col-lg-6">
+          <div class="row padding-box">
+            <div class="input-group mb-3">
+              <span class="input-group-text" id="inputGroup-sizing-default"
+                >Search</span
+              >
+              <input
+                type="text"
+                class="form-control"
+                aria-label="Sizing example input"
+                aria-describedby="inputGroup-sizing-default"
+                bind:value={searchText}
+                on:change={filterListFriends}
+                disabled={!allowEdit}
+              />
+            </div>
+          </div>
+          <div class="row" style="margin-left: 10px;">Suggestions:</div>
+          <div class="row">
+            <div class="col-sm-12">
+              <ListUsers
+                {users}
+                buttons={allowEdit
+                  ? [{ label: 'Add', style: 'btn-primary', handler: addUser }]
+                  : []}
+                emptyText="No friend found"
+              ></ListUsers>
+            </div>
           </div>
         </div>
-        <div class="row" style="margin-left: 10px;">Suggestions:</div>
-        <div class="row">
-          <div class="col-sm-12">
-            <ListUsers
-              {users}
-              buttons={allowEdit
-                ? [{ label: 'Add', style: 'btn-primary', handler: addUser }]
-                : []}
-              emptyText="No friend found"
-            ></ListUsers>
-          </div>
-        </div>
-      </div>
-
+      {/if}
       <div class="col-sm-12 col-md-12 col-lg-6">
         <div class="row padding-box">
           <div class="input-group mb-3">

@@ -6,7 +6,6 @@ export const checkUrlAccessible = async (url: string): Promise<boolean> => {
         const res = await fetch(url, { method: 'HEAD' });
         return res.ok;
     } catch (err) {
-        console.error('Error checking URL:', err);
         return false;
     }
 }
@@ -35,7 +34,6 @@ export const getFileNameFromUrl = (url: string): string => {
     try {
         return decodeURIComponent(url.substring(url.lastIndexOf('/') + 1));
     } catch (error) {
-        console.error('Invalid URL:', error);
         return '';
     }
 }

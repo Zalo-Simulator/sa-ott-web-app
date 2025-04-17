@@ -6,13 +6,22 @@
 <ul class="nav nav-tabs nav-pills">
   {#each tabs as tab, index}
     <li class="nav-item">
+      {#if tab.notify}
+        <div
+          class="badge float-right"
+          class:badge-light={tabIndex == index}
+          class:badge-primary={tabIndex != index}
+        >
+          {tab.notify}
+        </div>
+      {/if}
       <a
         class="nav-link"
         class:active={tabIndex == index}
-        on:click={()=>{
-            tabIndex = index
+        on:click={() => {
+          tabIndex = index
         }}
-        href="#">{tab}</a
+        href="#">{tab.name}</a
       >
     </li>
   {/each}

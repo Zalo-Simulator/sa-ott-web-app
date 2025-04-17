@@ -101,6 +101,7 @@
 
   const selectPerson = async (person: any) => {
     selectedPerson = person
+    person.unread = 0
     selectedGroup = null
     if (selectedPerson.group_id) {
       group_id = selectedPerson.group_id
@@ -116,15 +117,18 @@
 
     numMessage = 0
     getChatConversation()
+    filterFriends = filterFriends
   }
 
   const selectGroup = async (group: any) => {
     selectedGroup = group
+    group.unread = 0
     selectedPerson = null
     group_id = group.id
 
     numMessage = 0
     getChatConversation()
+    filterGroups = filterGroups
   }
 
   const sumCountsByName = (items: any[]): any[] => {
@@ -930,13 +934,17 @@
     object-fit: cover;
   }
 
+  .align-items-start {
+    cursor: pointer;
+  }
+
   @media (max-width: 750px) {
     .sm-hidden {
       display: none;
     }
 
-    .align-items-start {
-      cursor: pointer;
+    .list-group-item {
+      padding: 0.75em;
     }
   }
 </style>

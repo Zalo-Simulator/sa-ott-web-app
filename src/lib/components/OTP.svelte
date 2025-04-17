@@ -295,7 +295,7 @@
               <input
                 type="password"
                 class="form-control form-control-lg"
-                placeholder="Phone number"
+                placeholder="Enter your password"
                 bind:value={password}
                 class:is-invalid={!!password && !passwordValid}
               />
@@ -310,7 +310,7 @@
               <input
                 type="password"
                 class="form-control form-control-lg"
-                placeholder="Phone number"
+                placeholder="Repeat your password"
                 bind:value={passwordRepeat}
                 class:is-invalid={!!passwordRepeat &&
                   passwordRepeat != password}

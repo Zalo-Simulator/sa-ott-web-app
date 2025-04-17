@@ -83,9 +83,19 @@
       refeshUserSession()
     }
 
-    pageHomeClass.subscribe((val) => {
+    pageHomeClass.subscribe(async (val) => {
       if (val == '') {
         showLeftMenu()
+
+        if (!$wsClient) {
+          const session: any = await getUserSession()
+          wsClient.set(
+            new WebSocketClient(
+              WEBSOCKET.connect.replace('{id}', $currentUser?.id) +
+                `?token=${session.access_token}`
+            )
+          )
+        }
       }
     })
   })

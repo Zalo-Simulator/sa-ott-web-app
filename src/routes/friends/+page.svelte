@@ -99,9 +99,9 @@
   <Tab
     bind:tabIndex
     tabs={[
-      'Total Friends: ' + friends?.length,
-      'Make a New Friend',
-      'Pending Requests'
+      { name: 'Total Friends: ' + friends?.length },
+      { name: 'Make a New Friend' },
+      { name: 'Pending Requests', notify: pendings?.length }
     ]}
   ></Tab>
   <div class="main-container">
