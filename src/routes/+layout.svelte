@@ -38,8 +38,8 @@
       closeBtn?.addEventListener('click', () => {
         sidebar?.classList.toggle('open')
         menuBtnChange() //calling the function(optional)
-        hasClickEvent = true
       })
+      hasClickEvent = true
     }
     // following are the code to change sidebar button(optional)
     function menuBtnChange() {

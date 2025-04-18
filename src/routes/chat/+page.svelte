@@ -59,10 +59,6 @@
   const getFriends = async () => {
     friends = (await API.get(FRIEND_API.getFriends)).data.friends
     friends = friends.filter((item: any) => item.id != currentUser.id)
-    let privateGroups = await getAllPrivateGroupIds()
-    friends.forEach((item: any) => {
-      item.group_id = privateGroups['user' + item.id]
-    })
 
     if (friends.length > 0) {
       selectPerson(friends[0])

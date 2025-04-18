@@ -14,15 +14,18 @@
   redirect()
 
   const resetPassword = async () => {
-    await API.post(AUTH_API.resetPassword, {
+    const reset = await API.post(AUTH_API.resetPassword, {
       phone: phoneNumber,
       password: password
     })
-    const res = await API.post(AUTH_API.login, {
-      phone: phoneNumber,
-      password: password
-    })
-    return res
+    if (reset?.data) {
+      const res = await API.post(AUTH_API.login, {
+        phone: phoneNumber,
+        password: password
+      })
+      return res
+    }
+    return false
   }
 </script>
 
