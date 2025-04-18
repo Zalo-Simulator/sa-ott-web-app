@@ -79,7 +79,7 @@
       step = 2
     } catch (error) {
       phoneOTPValid = false
-      //console.error('Error sending OTP:', error)
+      console.error('Error sending OTP:', error)
     } finally {
       loader.hideLoader()
     }

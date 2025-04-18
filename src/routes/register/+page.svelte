@@ -13,17 +13,22 @@
   redirect()
 
   const register = async () => {
-    await API.post(AUTH_API.register, {
+    const reg = await API.post(AUTH_API.register, {
       full_name: phoneNumber,
       phone: phoneNumber,
       password: password,
       avatar_url: ''
     })
-    const res = await API.post(AUTH_API.login, {
-      phone: phoneNumber,
-      password: password
-    })
-    return res
+    if (reg?.data) {
+      const res = await API.post(AUTH_API.login, {
+        phone: phoneNumber,
+        password: password
+      })
+      return res
+    }
+    else {
+      return false
+    }
   }
 </script>
 

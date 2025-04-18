@@ -38,7 +38,7 @@ const apiRequest = async (
             loader.hideLoader();
 
             const responseJSON = await response.json();
-            let message = responseJSON?.detail[0]?.msg;
+            let message = responseJSON?.detail[0]?.msg || responseJSON?.detail;
             if (message) {
                 toast.push(message, TOAST_THEME.ERROR);
             }
@@ -88,7 +88,7 @@ const fileRequest = async (
             loader.hideLoader();
 
             const responseJSON = await response.json();
-            let message = responseJSON?.detail[0]?.msg;
+            let message = responseJSON?.detail[0]?.msg || responseJSON?.detail;
             if (message) {
                 toast.push(message, TOAST_THEME.ERROR);
             }
