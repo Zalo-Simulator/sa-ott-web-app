@@ -1,5 +1,5 @@
-const URL_PREFIX = "http://3.89.90.31:8000"; //import.meta.env.VITE_API_URL // 
-const WEBSOCKET_PREFIX = "ws://3.89.90.31:8000/ws/users";// import.meta.env.VITE_WEBSOCKET_URL 
+const URL_PREFIX = "https://api.sa-ott-zalo.click"; //import.meta.env.VITE_API_URL // 
+const WEBSOCKET_PREFIX = "wss://api.sa-ott-zalo.click/ws/users";// import.meta.env.VITE_WEBSOCKET_URL 
 
 export const AUTH_API = {
     login: `${URL_PREFIX}/auth/login`,
