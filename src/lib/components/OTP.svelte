@@ -189,7 +189,7 @@
               <label class="form-check-label" for="defaultCheck1">
                 &nbsp; I agree to the <a
                   href="https://google.com"
-                  target="_blank">terms of use of Vchat</a
+                  target="_blank">terms of use of Bkalo</a
                 >
               </label>
             </div>

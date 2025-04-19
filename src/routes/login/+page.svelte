@@ -64,7 +64,7 @@
       <div class="card-group mb-0">
         <div class="card p-4">
           <div class="card-body">
-            <h1>VChat Login</h1>
+            <h1>Bkalo Login</h1>
             <p class="text-muted">Sign in to your account</p>
             <div class="input-group mb-3">
               <span class="input-group-addon"><i class="fa fa-user"></i></span>
@@ -109,7 +109,7 @@
             <div>
               <h2>Sign up</h2>
               <p>
-                Sign up for the VChat application to connect instantly, chat
+                Sign up for the Bkalo application to connect instantly, chat
                 securely, and enjoy seamless communication with friends and
                 colleagues!
               </p>
