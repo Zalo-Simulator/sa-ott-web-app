@@ -15,7 +15,7 @@ export const USER_API = {
     getUser: `${URL_PREFIX}/users/{id}`,
     getCurrentUser: `${URL_PREFIX}/users/me`,
     updateUser: `${URL_PREFIX}/users/me`,
-    searchUsers: `${URL_PREFIX}/users/?text={text}`,
+    searchUsers: `${URL_PREFIX}/users?text={text}`,
 };
 
 export const FRIEND_API = {
